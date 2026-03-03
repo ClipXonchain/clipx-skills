@@ -75,6 +75,18 @@ def parse_args(argv: Any = None) -> argparse.Namespace:
         default="UTC",
         help="Timezone name for timestamps (e.g. UTC, Europe/London).",
     )
+    p.add_argument(
+        "--formatted",
+        action="store_true",
+        default=True,
+        help="For clipx mode: print server-formatted table (default). Same as VPS output.",
+    )
+    p.add_argument(
+        "--no-formatted",
+        dest="formatted",
+        action="store_false",
+        help="For clipx mode: print raw JSON instead of formatted table.",
+    )
     return p.parse_args(argv)
 
 
@@ -101,6 +113,9 @@ def main(argv: Any = None) -> int:
             "/api/clipx/analysis",
             {"t": args.analysis_type, "interval": args.interval, "tz": args.timezone},
         )
+        if result.get("ok") and result.get("formatted_table") and args.formatted:
+            print(result["formatted_table"], end="")
+            return 0
     else:
         print(json.dumps({"ok": False, "error": "unknown mode"}))
         return 1

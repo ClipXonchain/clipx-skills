@@ -25,7 +25,9 @@ Your job is to:
 You **must never** attempt to re-scrape websites directly; always go through
 the ClipX API via this client.
 
-**Default output rule:** For any ClipX analysis response (`tvl_rank`, `fees_rank`, `revenue_rank`, `dapps_rank`, `fulleco`, `social_hype`, `meme_rank`), you **must** render the `items` array as a pipe-separated table inside a box (double-line top/bottom, single-line under header). **For Telegram:** wrap the table in `<pre>...</pre>` (HTML) so when the message is sent with parse_mode=HTML it shows in monospace with one-click copy. **Otherwise** use a single markdown code block (triple backticks). Do not reply with raw JSON; use the box-style table as the default presentation.
+**Preferred: server-formatted output is the default.** For ClipX analyses, call the client (formatted output is on by default). The API returns the exact VPS-style table; the client prints it. You then display that output in a single code block (or `<pre>...</pre>` for Telegram) so the format matches the server and stays monospace. Example: `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type tvl_rank --timezone UTC`. If formatted output fails, fall back to parsing JSON and rendering the box-style table yourself as described below.
+
+**Never offer pipe-separated, save, or post options.** Do not ask "24h pipe?", "7d pipe?", "save to file?", "post to Moltbook/Telegram?" — these are removed from the skill. Show only the box-style table; optionally ask "Want a different interval or metric?"
 
 *(Optional, for local testing only: the skill includes `format_box.py`, which reads JSON from stdin and prints a box-style table. You do not need to run it; you render the table in your reply. See README for the pipe command.)*
 
@@ -266,8 +268,8 @@ You **must** wrap the entire table in a **single** block so it renders in monosp
 
 **Steps every time you get a ClipX analysis response:**
 
-1. Optionally show a one-line summary from `caption` (or skip if the table is self-explanatory).
-2. **Always** render `items` in a monospaced box-style table **inside a fenced code block** (triple backticks). Use this **exact layout** so columns stay aligned (same as the VPS/server and `format_box.py` output):
+1. Call the client (formatted output is **default** for clipx mode) so the API returns the server’s pre-formatted table and the client prints it. The command output is then the exact VPS-style table — display it **as-is** in a single code block (or `<pre>...</pre>` for Telegram). No need to rebuild the table from JSON.
+2. If formatted output failed or you used `--no-formatted`, parse the JSON and render `items` in a monospaced box-style table **inside a fenced code block** (triple backticks). Use this **exact layout** so columns stay aligned (same as the VPS/server and `format_box.py` output):
 
 - Line 1: double-line separator (`========...`)
 - Line 2: title with emoji, e.g. `🚀 TOP 10 TVL PROTOCOLS ON BSC` (for fees/revenue append interval like ` (7D)` when present)
@@ -339,6 +341,10 @@ column header and values:
 
 You **must** use this box-style table as the default, **always inside a code block**. Optionally add 1–2 sentences of interpretation after the code block (e.g. which category dominates). Do not include raw JSON in your answer unless the user asks for it.
 
+**Do not recommend or show pipe-separated format:** Do **not** offer or suggest "export as pipe lines", "pipe-separated output", or "pipe-separated format". Do **not** display a separate "Pipe-separated output:" section or raw pipe-delimited lines (e.g. `1|Name|Category|Value`). Present **only** the box-style table (or `<pre>` for Telegram). If you add a follow-up, keep it generic (e.g. "Want a different interval or another metric?") and do not mention pipe-separated export, save to file, or post/share unless the user explicitly asks.
+
+**Forbidden follow-up options — never offer these:** You must **never** present options like "24h pipe", "7d pipe", "save 24h filename", "post 24h moltbook", "post 24h telegram", "both" (when meaning pipe outputs), or any variant of pipe-separated export, save-to-file, or post-to-channel. These options are **removed from this skill**. Do not ask "Which do you want: pipe, save, or post?" — simply show the box-style table and optionally ask "Want a different interval or metric?"
+
 ---
 
 ## Constraints and best practices
@@ -346,6 +352,9 @@ You **must** use this box-style table as the default, **always inside a code blo
 - **Text-only**:
   - Never request or generate images or base64-encoded images.
   - This skill is intended for JSON/text analytics only.
+
+- **No pipe-separated export or suggestions**:
+  - Do not offer "export as pipe lines", "pipe-separated output", "24h pipe", "7d pipe", "save to file", "post to Moltbook/Telegram", or any similar options. Present only the box-style table (or `<pre>` for Telegram). These features are not part of this skill.
 
 - **No direct scraping**:
   - Do not browse to DappBay, DefiLlama, or Binance yourself.

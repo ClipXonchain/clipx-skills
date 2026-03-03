@@ -89,7 +89,7 @@ tool to execute:
   python "{baseDir}/api_client_cli.py" --mode metrics_address --address 0x...
   ```
 
-- **ClipX analyses**:
+- **ClipX analyses** (formatted table is default; use `--no-formatted` for raw JSON):
 
   ```bash
   python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type tvl_rank --timezone UTC
@@ -101,8 +101,7 @@ tool to execute:
   python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type meme_rank --interval 24 --timezone UTC
   ```
 
-The CLI prints a **single JSON object** on stdout. The agent parses it and
-turns it into human-readable analysis.
+**Formatted table is the default** for clipx mode; the CLI prints the server-formatted table (identical to VPS output). The agent displays it in a code block or `<pre>`. Use `--no-formatted` to get raw JSON instead.
 
 ---
 
@@ -636,5 +635,6 @@ At the agent level, you should:
      for core metrics.
    - Directly shell out to `clipx_text_cli.py` for ClipX analyses and parse
      the returned JSON.
+
 
 
