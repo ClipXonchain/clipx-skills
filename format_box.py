@@ -49,7 +49,7 @@ def get_json_from_api(analysis_type: str, interval: str, timezone: str) -> str:
         capture_output=True,
         text=True,
         cwd=script_dir,
-        timeout=60,
+        timeout=200,
     )
     if result.returncode != 0 and not result.stdout.strip():
         err = result.stderr.strip() or result.stdout.strip() or "Unknown error"
@@ -112,7 +112,30 @@ def main():
         print(data.get("caption", ""))
         return
 
-    # Title and column header from analysis_type (match VPS/server format)
+    # meme_rank: match VPS "FETCHED MEME TOKENS (FOR VERIFICATION)" (RANK|NAME|SCORE|MCAP|B.HOLDERS)
+    if analysis_type == "meme_rank" and items and (items[0].get("mcap") is not None or items[0].get("bHolders") is not None):
+        sep = "=" * 62
+        sep_s = "-" * 62
+        print()
+        print(sep)
+        print("🚀 FETCHED MEME TOKENS (FOR VERIFICATION)")
+        print(sep)
+        print(f"{'RANK':<5} | {'NAME':<20} | {'SCORE':<8} | {'MCAP':<12} | {'B.HOLDERS':<10}")
+        print(sep_s)
+        for it in items:
+            rank = f"#{it.get('rank', '')}"
+            name = (it.get("name") or "")[:18]
+            score = str(it.get("metric_value", it.get("score", "")))
+            mcap = str(it.get("mcap", ""))
+            holders = str(it.get("bHolders", ""))
+            print(f"{rank:<5} | {name:<20} | {score:<8} | {mcap:<12} | {holders:<10}")
+        print(sep)
+        if data.get("source"):
+            print(f"Source: {data['source']}")
+        print()
+        return
+
+    # Standard 4-column format for other analysis types
     titles = {
         "tvl_rank": ("TOP 10 TVL PROTOCOLS ON BSC", "#", "NAME", "CATEGORY", "TVL"),
         "fees_rank": ("TOP 10 FEES PAID PROTOCOLS ON BSC", "#", "NAME", "CATEGORY", "FEES"),
@@ -125,17 +148,15 @@ def main():
     title_line, col1, col2, col3, col4 = titles.get(
         analysis_type, ("RANKING", "#", "NAME", "CATEGORY", "VALUE")
     )
-    # Append interval in parens for fees/revenue (e.g. " (7D)") when present in API response
     meta = data.get("meta") or {}
     interval = (meta.get("interval") or data.get("interval") or "").strip().upper()
     if interval and analysis_type in ("fees_rank", "revenue_rank"):
         title_line = f"{title_line} ({interval})"
 
-    w2, w3, w4 = 22, 16, 12
+    w2, w3 = 22, 16
     sep_double = "=" * 80
     sep_single = "-" * 80
 
-    # Match VPS layout: double top → title → double → single → header → single → rows → double → source
     print()
     print(sep_double)
     print(f"🚀 {title_line}")

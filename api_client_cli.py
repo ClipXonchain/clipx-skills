@@ -31,7 +31,7 @@ def call_api(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
     base = get_api_base()
     url = f"{base}{path}"
     try:
-        resp = requests.get(url, params=params, timeout=30)
+        resp = requests.get(url, params=params, timeout=180)
     except requests.RequestException as exc:  # noqa: BLE001
         return {"ok": False, "error": f"Network error: {exc}"}
 
