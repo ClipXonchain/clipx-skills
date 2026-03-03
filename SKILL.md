@@ -25,7 +25,7 @@ Your job is to:
 You **must never** attempt to re-scrape websites directly; always go through
 the ClipX API via this client.
 
-**Default output rule:** For any ClipX analysis response (`tvl_rank`, `fees_rank`, `revenue_rank`, `dapps_rank`, `fulleco`, `social_hype`, `meme_rank`), you **must** render the `items` array as a pipe-separated table inside a box (double-line top/bottom, single-line under header). **Always wrap that table in a markdown code block** (triple backticks) so it displays in monospace and columns stay aligned in chat apps. Do not reply with raw JSON; use the box-style table as the default presentation.
+**Default output rule:** For any ClipX analysis response (`tvl_rank`, `fees_rank`, `revenue_rank`, `dapps_rank`, `fulleco`, `social_hype`, `meme_rank`), you **must** render the `items` array as a pipe-separated table inside a box (double-line top/bottom, single-line under header). **For Telegram:** wrap the table in `<pre>...</pre>` (HTML) so when the message is sent with parse_mode=HTML it shows in monospace with one-click copy. **Otherwise** use a single markdown code block (triple backticks). Do not reply with raw JSON; use the box-style table as the default presentation.
 
 *(Optional, for local testing only: the skill includes `format_box.py`, which reads JSON from stdin and prints a box-style table. You do not need to run it; you render the table in your reply. See README for the pipe command.)*
 
@@ -259,7 +259,10 @@ present the result in **box-style table format by default**. Do **not** show
 raw JSON to the user unless they explicitly request it.
 
 **Critical — monospace so columns don't break:**  
-You **must** wrap the entire table (title, separators, header, all rows, and Source line) in a **single markdown code block** using triple backticks (e.g. ` ```text ` or ` ``` `). This makes chat apps (Telegram, Discord, OpenClaw/ClawHub, etc.) render the table in **monospace font** and show a **one-click copy** button on the block so the user can copy the whole table at once. Do not split the table across multiple blocks or mix it with non-code text inside the block.
+You **must** wrap the entire table in a **single** block so it renders in monospace and supports one-click copy. Use **one** of these formats:
+
+- **For Telegram (preferred when the reply is shown in a Telegram bot chat):** Wrap the table in **HTML pre** so Telegram displays it in monospace with a copy-friendly block. Output the table inside `<pre>...</pre>`. Escape any `&`, `<`, `>` in the table as `&amp;`, `&lt;`, `&gt;`. The integration must send the message with **parse_mode=HTML** so Telegram renders the `<pre>` block in monospace (like the reference: aligned columns and one-click copy).
+- **Otherwise:** Use a single **markdown code block** (triple backticks, e.g. ` ```text ` … ` ``` `). Do not split the table across multiple blocks or mix non-code text inside the block.
 
 **Steps every time you get a ClipX analysis response:**
 
@@ -291,6 +294,19 @@ Example (inside a code block):
 ================================================================================
 Source: @ClipX0_
 ```
+
+**Telegram: monospace and one-click copy (reference format)**  
+For the table to appear in Telegram like the reference (monospace, aligned columns, copy button), the message must be sent with **parse_mode=HTML**. Output the table inside HTML pre tags:
+
+`<pre>`
+`================================================================================`
+`🚀 TOP 10 FEES PAID PROTOCOLS ON BSC (7D)`
+`================================================================================`
+… (all table lines) …
+`Source: @ClipX0_`
+`</pre>`
+
+If the table contains `&`, `<`, or `>`, escape them as `&amp;`, `&lt;`, `&gt;`. The bot or integration that sends the agent reply to Telegram must use **parse_mode=HTML** so the `<pre>` block is rendered in monospace. Prefer this format when the user is in a Telegram chat or when they expect Telegram-style output.
 
 Mapping from JSON to table for `tvl_rank`:
 

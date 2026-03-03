@@ -130,6 +130,12 @@ python api_client_cli.py --mode clipx --analysis-type tvl_rank --timezone UTC | 
 
 ---
 
+### Telegram: monospace and one-click copy
+
+For the ClipX table to appear in **Telegram** in monospace (aligned columns, copy-friendly block like the reference), the message must be sent with **parse_mode=HTML**. The agent is instructed to wrap the table in `<pre>...</pre>`. Your bot or OpenClaw→Telegram bridge should send the agent’s reply with **parse_mode=HTML** so Telegram renders the `<pre>` block in monospace. Do not strip the `<pre>` tags when forwarding to Telegram.
+
+---
+
 ### Private API (Server Side)
 
 This folder assumes you have a **separate private repo or directory** that
