@@ -25,7 +25,7 @@ Your job is to:
 You **must never** attempt to re-scrape websites directly; always go through
 the ClipX API via this client.
 
-**Default output rule:** For any ClipX analysis response (`tvl_rank`, `fees_rank`, `revenue_rank`, `dapps_rank`, `fulleco`, `social_hype`, `meme_rank`), you **must** render the `items` array as a pipe-separated table inside a box (double-line top/bottom, single-line under header). Do not reply with raw JSON; use the box-style table as the default presentation.
+**Default output rule:** For any ClipX analysis response (`tvl_rank`, `fees_rank`, `revenue_rank`, `dapps_rank`, `fulleco`, `social_hype`, `meme_rank`), you **must** render the `items` array as a pipe-separated table inside a box (double-line top/bottom, single-line under header). **Always wrap that table in a markdown code block** (triple backticks) so it displays in monospace and columns stay aligned in chat apps. Do not reply with raw JSON; use the box-style table as the default presentation.
 
 *(Optional, for local testing only: the skill includes `format_box.py`, which reads JSON from stdin and prints a box-style table. You do not need to run it; you render the table in your reply. See README for the pipe command.)*
 
@@ -258,10 +258,13 @@ When you call this skill and receive JSON from the API client, you **must**
 present the result in **box-style table format by default**. Do **not** show
 raw JSON to the user unless they explicitly request it.
 
+**Critical — monospace so columns don't break:**  
+You **must** wrap the entire table (title, separators, header, all rows, and Source line) in a **markdown code block** using triple backticks (e.g. ` ```text ` or ` ``` `). This makes chat apps (Telegram, Discord, etc.) render the table in **monospace font**, so the pipe characters and columns stay aligned. If you paste the table as plain text without a code block, proportional fonts will break the alignment.
+
 **Steps every time you get a ClipX analysis response:**
 
 1. Optionally show a one-line summary from `caption` (or skip if the table is self-explanatory).
-2. **Always** render `items` in a monospaced box-style table like this:
+2. **Always** render `items` in a monospaced box-style table **inside a fenced code block** (triple backticks), like this:
 
 ```text
 🚀 TOP 10 TVL PROTOCOLS ON BSC
@@ -300,14 +303,15 @@ column header and values:
 
 **Format rules (apply by default):**
 
-- Line 1: Title with emoji, e.g. `🚀 TOP 10 TVL PROTOCOLS ON BSC`
+- **Wrap the whole table in a code block:** Start with ` ```text ` or ` ``` `, then the table lines, then close with ` ``` `. This keeps the table in monospace so it does not break in Telegram or other chats.
+- Line 1 (inside code block): Title with emoji, e.g. `🚀 TOP 10 TVL PROTOCOLS ON BSC`
 - Line 2: Double-line separator (`================================================================================`)
 - Line 3: Header row with pipe separators, e.g. `#   | NAME                 | CATEGORY        | TVL`
 - Line 4: Single-line separator (`--------------------------------------------------------------------------------`)
 - Next N lines: One row per item, aligned: `rank | name (padded) | category (padded) | metric_value`
-- Last line: Double-line separator again.
+- Last line: Double-line separator; then optionally `Source: @ClipX0_`; then close the code block with ` ``` `.
 
-You **must** use this box-style table as the default. Optionally add 1–2 sentences of interpretation after the table (e.g. which category dominates). Do not include raw JSON in your answer unless the user asks for it.
+You **must** use this box-style table as the default, **always inside a code block**. Optionally add 1–2 sentences of interpretation after the code block (e.g. which category dominates). Do not include raw JSON in your answer unless the user asks for it.
 
 ---
 
