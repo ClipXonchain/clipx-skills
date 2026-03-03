@@ -23,10 +23,15 @@ included here.
   Tiny Python CLI that calls your hosted API and prints the JSON response.
   This is what the agent will execute.
 
+- `format_box.py`  
+  Optional helper: reads JSON from stdin and prints a box-style table. Use
+  for local testing only (see below); the agent renders tables in its reply
+  per `SKILL.md`.
+
 - `requirements.txt`  
   Only `requests` is required on the client side.
 
-Place this folder (with these files only) under your workspace `skills`
+Place this folder (with these files) under your workspace `skills`
 directory when testing locally, or publish it to ClawHub.
 
 ---
@@ -98,6 +103,28 @@ tool to execute:
 
 The CLI prints a **single JSON object** on stdout. The agent parses it and
 turns it into human-readable analysis.
+
+---
+
+### Local testing: box-style table
+
+To see the same box-style table locally (without running an agent), pipe the
+CLI output into `format_box.py`:
+
+**PowerShell (Windows):**
+
+```powershell
+python api_client_cli.py --mode clipx --analysis-type tvl_rank --timezone UTC | python format_box.py
+```
+
+**Bash (Linux/macOS):**
+
+```bash
+python api_client_cli.py --mode clipx --analysis-type tvl_rank --timezone UTC | python format_box.py
+```
+
+`format_box.py` reads JSON from stdin (with UTF-8 or UTF-8 BOM) and prints a
+formatted table. Use any `--analysis-type` (e.g. `fees_rank`, `social_hype`).
 
 ---
 
