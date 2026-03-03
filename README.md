@@ -34,6 +34,11 @@ included here.
 Place this folder (with these files) under your workspace `skills`
 directory when testing locally, or publish it to ClawHub.
 
+**If the menu shows bullets (•) or "Reply with tvl 24h" instead of numbers:**  
+1. **ClawHub:** Re-publish this skill (`clawhub publish .`) so the updated SKILL.md is used.  
+2. **Workspace:** If you have both `f:\skill\SKILL.md` (root) and `ClipX_Skills\SKILL.md`, ensure the agent loads the ClipX skill. The root SKILL has been updated with the numbered menu too.  
+3. **Both skills** now mandate: numbered list (1–8), "Reply with a number" — never bullets or command names.
+
 ---
 
 ### Client Requirements
