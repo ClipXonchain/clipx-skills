@@ -20,10 +20,14 @@ Your job is to:
 1. Decide **when** these live metrics / rankings are needed.
 2. Call `api_client_cli.py` with the correct arguments.
 3. Parse the JSON response.
-4. Turn it into a clear, user-friendly explanation or analysis.
+4. **By default**, present the result in **box-style table format** (see below). Never show raw JSON to the user unless they explicitly ask for it.
 
 You **must never** attempt to re-scrape websites directly; always go through
 the ClipX API via this client.
+
+**Default output rule:** For any ClipX analysis response (`tvl_rank`, `fees_rank`, `revenue_rank`, `dapps_rank`, `fulleco`, `social_hype`, `meme_rank`), you **must** render the `items` array as a pipe-separated table inside a box (double-line top/bottom, single-line under header). Do not reply with raw JSON; use the box-style table as the default presentation.
+
+*(Optional, for local testing only: the skill includes `format_box.py`, which reads JSON from stdin and prints a box-style table. You do not need to run it; you render the table in your reply. See README for the pipe command.)*
 
 ---
 
@@ -209,7 +213,7 @@ You should prefer these when the user asks for:
 
 ### Response format (ClipX analyses)
 
-Each call returns JSON like:
+Each call returns JSON like below. **You must present this to the user in box-style table format by default** (see section "Default output format: box-style table"). Do not echo the raw JSON.
 
 ```json
 {
@@ -239,12 +243,71 @@ You must:
    - Use `caption` as the **primary narrative** (you can adapt or shorten it
      depending on the user’s question).
    - Use `items` to:
-     - Build bullet lists: rank, name, key metric(s).
+     - Build tables or bullet lists: rank, name, key metric(s).
      - Compare entries (e.g. top 3 TVL protocols).
      - Answer follow-up questions (e.g. “which category dominates TVL?”).
 
 Avoid simply dumping raw JSON back to the user. Always explain what the
 numbers mean (e.g. “TVL is concentrated in DeFi lending and RWA protocols”).
+
+---
+
+## Default output format: box-style table (mandatory)
+
+When you call this skill and receive JSON from the API client, you **must**
+present the result in **box-style table format by default**. Do **not** show
+raw JSON to the user unless they explicitly request it.
+
+**Steps every time you get a ClipX analysis response:**
+
+1. Optionally show a one-line summary from `caption` (or skip if the table is self-explanatory).
+2. **Always** render `items` in a monospaced box-style table like this:
+
+```text
+🚀 TOP 10 TVL PROTOCOLS ON BSC
+================================================================================
+#   | NAME                 | CATEGORY        | TVL
+--------------------------------------------------------------------------------
+1   | PancakeSwap AMM      | Dexs            | $1.92B
+2   | Lista Lending        | Lending         | $1.84B
+3   | Circle USYC          | RWA             | $1.79B
+4   | Venus Core Pool      | Lending         | $1.23B
+5   | Aster Bridge         | Bridge          | $786.52M
+6   | BlackRock BUIDL      | RWA             | $527.51M
+7   | Binance staked ETH   | Liquid Staking  | $413.40M
+8   | Solv Basis Trading   | Basis Trading   | $237.45M
+9   | Ondo Global Markets  | RWA             | $237.43M
+10  | Aave V3              | Lending         | $183.42M
+================================================================================
+```
+
+Mapping from JSON to table for `tvl_rank`:
+
+- `#`        → `items[i].rank`
+- `NAME`     → `items[i].name`
+- `CATEGORY` → `items[i].category` (or `N/A` if null)
+- `TVL`      → `items[i].metric_value`
+
+For other `analysis_type` values, follow the same pattern but adapt the last
+column header and values:
+
+- `fees_rank`     → header `FEES`, use `metric_value` (e.g. `$1.2M`).
+- `revenue_rank`  → header `REVENUE`, use `metric_value`.
+- `social_hype`   → header `HYPE SCORE`, use `metric_value`.
+- `meme_rank`     → header `SCORE`, use `metric_value`.
+- `dapps_rank`    → header such as `USERS (7D)`; use the relevant metric.
+- `fulleco`       → headers and categories per ecosystem segment.
+
+**Format rules (apply by default):**
+
+- Line 1: Title with emoji, e.g. `🚀 TOP 10 TVL PROTOCOLS ON BSC`
+- Line 2: Double-line separator (`================================================================================`)
+- Line 3: Header row with pipe separators, e.g. `#   | NAME                 | CATEGORY        | TVL`
+- Line 4: Single-line separator (`--------------------------------------------------------------------------------`)
+- Next N lines: One row per item, aligned: `rank | name (padded) | category (padded) | metric_value`
+- Last line: Double-line separator again.
+
+You **must** use this box-style table as the default. Optionally add 1–2 sentences of interpretation after the table (e.g. which category dominates). Do not include raw JSON in your answer unless the user asks for it.
 
 ---
 
