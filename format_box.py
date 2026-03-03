@@ -1,17 +1,101 @@
 """
 Read ClipX JSON from stdin and print box-style table to stdout.
-Run locally to test formatted output, e.g.:
+Optional: pass --analysis-type (and --interval, --timezone) to fetch and format in one step.
+
+Examples:
+  # Fetch + format in one command
+  python format_box.py --analysis-type tvl_rank
+  python format_box.py --analysis-type meme_rank --interval 24 --timezone UTC
+  python format_box.py --analysis-type fees_rank --interval 7d
+
+  # Or pipe from api_client_cli
   python api_client_cli.py --mode clipx --analysis-type tvl_rank --timezone UTC | python format_box.py
 """
+import argparse
 import json
+import os
+import subprocess
 import sys
 
-def main():
+ANALYSIS_TYPES = (
+    "tvl_rank",
+    "fees_rank",
+    "revenue_rank",
+    "dapps_rank",
+    "fulleco",
+    "social_hype",
+    "meme_rank",
+)
+
+
+def get_json_from_stdin() -> str:
     # Use utf-8-sig to strip BOM when piping on Windows
-    raw = sys.stdin.buffer.read().decode("utf-8-sig").strip()
-    if not raw:
-        print("No input (pipe JSON from api_client_cli.py)", file=sys.stderr)
-        sys.exit(1)
+    return sys.stdin.buffer.read().decode("utf-8-sig").strip()
+
+
+def get_json_from_api(analysis_type: str, interval: str, timezone: str) -> str:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cli_path = os.path.join(script_dir, "api_client_cli.py")
+    cmd = [
+        sys.executable,
+        cli_path,
+        "--mode", "clipx",
+        "--analysis-type", analysis_type,
+        "--interval", interval,
+        "--timezone", timezone,
+    ]
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        cwd=script_dir,
+        timeout=60,
+    )
+    if result.returncode != 0 and not result.stdout.strip():
+        err = result.stderr.strip() or result.stdout.strip() or "Unknown error"
+        raise SystemExit(f"API client failed: {err}")
+    return result.stdout.strip()
+
+
+def main():
+    p = argparse.ArgumentParser(
+        description="Format ClipX API JSON as a box-style table. Read from stdin or fetch by analysis type."
+    )
+    p.add_argument(
+        "--analysis-type",
+        type=str,
+        choices=ANALYSIS_TYPES,
+        help="Fetch this analysis from the API and format (skips stdin).",
+    )
+    p.add_argument(
+        "--interval",
+        type=str,
+        default="24h",
+        help="Interval for API (24h, 7d, 30d, 24, etc.). Default: 24h",
+    )
+    p.add_argument(
+        "--timezone",
+        type=str,
+        default="UTC",
+        help="Timezone for API. Default: UTC",
+    )
+    args = p.parse_args()
+
+    if args.analysis_type:
+        try:
+            raw = get_json_from_api(args.analysis_type, args.interval, args.timezone)
+        except subprocess.TimeoutExpired:
+            print("Error: API request timed out", file=sys.stderr)
+            sys.exit(1)
+        except FileNotFoundError:
+            print("Error: api_client_cli.py not found next to format_box.py", file=sys.stderr)
+            sys.exit(1)
+    else:
+        raw = get_json_from_stdin()
+        if not raw:
+            print("No input. Pipe JSON from api_client_cli.py or use --analysis-type.", file=sys.stderr)
+            sys.exit(1)
+
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as e:
@@ -28,10 +112,10 @@ def main():
         print(data.get("caption", ""))
         return
 
-    # Title and column header from analysis_type
+    # Title and column header from analysis_type (match VPS/server format)
     titles = {
         "tvl_rank": ("TOP 10 TVL PROTOCOLS ON BSC", "#", "NAME", "CATEGORY", "TVL"),
-        "fees_rank": ("TOP 10 FEES PROTOCOLS ON BSC", "#", "NAME", "CATEGORY", "FEES"),
+        "fees_rank": ("TOP 10 FEES PAID PROTOCOLS ON BSC", "#", "NAME", "CATEGORY", "FEES"),
         "revenue_rank": ("TOP 10 REVENUE PROTOCOLS ON BSC", "#", "NAME", "CATEGORY", "REVENUE"),
         "dapps_rank": ("TOP 10 DAPPS BY USERS (7D)", "#", "NAME", "CATEGORY", "USERS"),
         "fulleco": ("FULL ECOSYSTEM LEADERS", "#", "NAME", "CATEGORY", "METRIC"),
@@ -41,14 +125,22 @@ def main():
     title_line, col1, col2, col3, col4 = titles.get(
         analysis_type, ("RANKING", "#", "NAME", "CATEGORY", "VALUE")
     )
+    # Append interval in parens for fees/revenue (e.g. " (7D)") when present in API response
+    meta = data.get("meta") or {}
+    interval = (meta.get("interval") or data.get("interval") or "").strip().upper()
+    if interval and analysis_type in ("fees_rank", "revenue_rank"):
+        title_line = f"{title_line} ({interval})"
 
     w2, w3, w4 = 22, 16, 12
     sep_double = "=" * 80
     sep_single = "-" * 80
 
+    # Match VPS layout: double top → title → double → single → header → single → rows → double → source
     print()
+    print(sep_double)
     print(f"🚀 {title_line}")
     print(sep_double)
+    print(sep_single)
     print(f"{col1:<3} | {col2:<{w2}} | {col3:<{w3}} | {col4}")
     print(sep_single)
     for it in items:

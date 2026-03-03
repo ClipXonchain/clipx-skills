@@ -108,23 +108,25 @@ turns it into human-readable analysis.
 
 ### Local testing: box-style table
 
-To see the same box-style table locally (without running an agent), pipe the
-CLI output into `format_box.py`:
+Use `format_box.py` to print a box-style table. You can either fetch and format in one command, or pipe from the CLI.
 
-**PowerShell (Windows):**
+**One command (fetch + format):**
 
-```powershell
-python api_client_cli.py --mode clipx --analysis-type tvl_rank --timezone UTC | python format_box.py
+```bash
+python format_box.py --analysis-type tvl_rank
+python format_box.py --analysis-type meme_rank --interval 24 --timezone UTC
+python format_box.py --analysis-type fees_rank --interval 7d
 ```
 
-**Bash (Linux/macOS):**
+Optional: `--interval` (default `24h`), `--timezone` (default `UTC`). Supported `--analysis-type`: `tvl_rank`, `fees_rank`, `revenue_rank`, `dapps_rank`, `fulleco`, `social_hype`, `meme_rank`.
+
+**Or pipe from the client:**
 
 ```bash
 python api_client_cli.py --mode clipx --analysis-type tvl_rank --timezone UTC | python format_box.py
 ```
 
-`format_box.py` reads JSON from stdin (with UTF-8 or UTF-8 BOM) and prints a
-formatted table. Use any `--analysis-type` (e.g. `fees_rank`, `social_hype`).
+`format_box.py` reads JSON from stdin (UTF-8 or UTF-8 BOM) when no `--analysis-type` is given.
 
 ---
 

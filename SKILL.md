@@ -259,29 +259,37 @@ present the result in **box-style table format by default**. Do **not** show
 raw JSON to the user unless they explicitly request it.
 
 **Critical — monospace so columns don't break:**  
-You **must** wrap the entire table (title, separators, header, all rows, and Source line) in a **markdown code block** using triple backticks (e.g. ` ```text ` or ` ``` `). This makes chat apps (Telegram, Discord, etc.) render the table in **monospace font**, so the pipe characters and columns stay aligned. If you paste the table as plain text without a code block, proportional fonts will break the alignment.
+You **must** wrap the entire table (title, separators, header, all rows, and Source line) in a **single markdown code block** using triple backticks (e.g. ` ```text ` or ` ``` `). This makes chat apps (Telegram, Discord, OpenClaw/ClawHub, etc.) render the table in **monospace font** and show a **one-click copy** button on the block so the user can copy the whole table at once. Do not split the table across multiple blocks or mix it with non-code text inside the block.
 
 **Steps every time you get a ClipX analysis response:**
 
 1. Optionally show a one-line summary from `caption` (or skip if the table is self-explanatory).
-2. **Always** render `items` in a monospaced box-style table **inside a fenced code block** (triple backticks), like this:
+2. **Always** render `items` in a monospaced box-style table **inside a fenced code block** (triple backticks). Use this **exact layout** so columns stay aligned (same as the VPS/server and `format_box.py` output):
+
+- Line 1: double-line separator (`========...`)
+- Line 2: title with emoji, e.g. `🚀 TOP 10 TVL PROTOCOLS ON BSC` (for fees/revenue append interval like ` (7D)` when present)
+- Line 3: double-line separator again
+- Line 4: single-line separator (`--------...`)
+- Line 5: header row: `#   | NAME                 | CATEGORY        | TVL` (or FEES, REVENUE, etc.)
+- Line 6: single-line separator again
+- Next N lines: one row per item, same column widths so pipes align
+- Then: double-line separator, then `Source: @ClipX0_`, then close the code block
+
+Example (inside a code block):
 
 ```text
-🚀 TOP 10 TVL PROTOCOLS ON BSC
 ================================================================================
-#   | NAME                 | CATEGORY        | TVL
+🚀 TOP 10 FEES PAID PROTOCOLS ON BSC (7D)
+================================================================================
 --------------------------------------------------------------------------------
-1   | PancakeSwap AMM      | Dexs            | $1.92B
-2   | Lista Lending        | Lending         | $1.84B
-3   | Circle USYC          | RWA             | $1.79B
-4   | Venus Core Pool      | Lending         | $1.23B
-5   | Aster Bridge         | Bridge          | $786.52M
-6   | BlackRock BUIDL      | RWA             | $527.51M
-7   | Binance staked ETH   | Liquid Staking  | $413.40M
-8   | Solv Basis Trading   | Basis Trading   | $237.45M
-9   | Ondo Global Markets  | RWA             | $237.43M
-10  | Aave V3              | Lending         | $183.42M
+#   | NAME                 | CATEGORY        | FEES
+--------------------------------------------------------------------------------
+1   | BSC                  | Chain           | $2.04M
+2   | PancakeSwap AMM V3   | Dexs            | $1.87M
+3   | GMGN                 | Telegram Bot    | $994.0K
+...
 ================================================================================
+Source: @ClipX0_
 ```
 
 Mapping from JSON to table for `tvl_rank`:
@@ -301,15 +309,17 @@ column header and values:
 - `dapps_rank`    → header such as `USERS (7D)`; use the relevant metric.
 - `fulleco`       → headers and categories per ecosystem segment.
 
-**Format rules (apply by default):**
+**Format rules (apply by default) — match this order so client output matches the server/VPS:**
 
-- **Wrap the whole table in a code block:** Start with ` ```text ` or ` ``` `, then the table lines, then close with ` ``` `. This keeps the table in monospace so it does not break in Telegram or other chats.
-- Line 1 (inside code block): Title with emoji, e.g. `🚀 TOP 10 TVL PROTOCOLS ON BSC`
-- Line 2: Double-line separator (`================================================================================`)
-- Line 3: Header row with pipe separators, e.g. `#   | NAME                 | CATEGORY        | TVL`
+- **Wrap the whole table in a single code block:** Start with ` ```text ` or ` ``` `, then the table lines below, then close with ` ``` `. One block only — this keeps the table in monospace and lets the chat UI show a one-click copy button for the whole table.
+- Line 1: Double-line separator (`================================================================================`)
+- Line 2: Title with emoji, e.g. `🚀 TOP 10 TVL PROTOCOLS ON BSC` or `🚀 TOP 10 FEES PAID PROTOCOLS ON BSC (7D)` (add interval in parens for fees_rank/revenue_rank when present)
+- Line 3: Double-line separator again
 - Line 4: Single-line separator (`--------------------------------------------------------------------------------`)
-- Next N lines: One row per item, aligned: `rank | name (padded) | category (padded) | metric_value`
-- Last line: Double-line separator; then optionally `Source: @ClipX0_`; then close the code block with ` ``` `.
+- Line 5: Header row with pipe separators, e.g. `#   | NAME                 | CATEGORY        | TVL` (use fixed column widths: rank 3, name 22, category 16 so pipes align)
+- Line 6: Single-line separator again
+- Next N lines: One row per item, same widths: `rank | name (padded to 22) | category (padded to 16) | metric_value`
+- Then: Double-line separator; then `Source: @ClipX0_`; then close the code block with ` ``` `.
 
 You **must** use this box-style table as the default, **always inside a code block**. Optionally add 1–2 sentences of interpretation after the code block (e.g. which category dominates). Do not include raw JSON in your answer unless the user asks for it.
 
