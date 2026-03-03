@@ -4,7 +4,43 @@ description: Thin client for the private ClipX BNBChain API, returning text-only
 metadata: { "openclaw": { "emoji": "🟡", "requires": { "bins": ["python"] }, "os": ["win32", "linux", "darwin"] } }
 ---
 
-**MENU RULE:** When user asks for clipx/BNBChain reports without specifying which one: show a **numbered** list (1., 2., 3., …). Never bullets (•). Never "tvl 24h" or "fees 7d". Say: "Reply with a number (1–8) to run that analysis."
+MENU = numbers (1. 2. 3. 4. 5. 6. 7. 8.). NEVER bullets (• or -).
+TABLE = wrap in ```text ... ``` or <pre>...</pre>. NEVER plain text.
+
+**CRITICAL — TABLE FORMAT (MONOSPACE REQUIRED)**
+
+You **must** wrap the table in one of these so it renders in monospace:
+- **Triple backticks:** ` ```text ` + table + ` ``` `
+- **For Telegram:** `<pre>` + table + `</pre>` (use parse_mode=HTML)
+
+Never output the table as plain text — columns will misalign. Always use backticks or `<pre>`.
+
+**CRITICAL — YOUR RESPONSE MUST END AFTER THE TABLE**
+
+After displaying the ClipX table, **STOP**. Do **NOT** add any text after it. Forbidden:
+- "If you want machine-readable output..."
+- "parse the printed table into pipes" or "re-run with --no-formatted"
+- "Which do you prefer?" or "Which would you like?"
+- Any bullet list of options (• parse... • re-run...)
+
+The table is the complete response. Nothing more.
+
+**MENU RULE — NUMBERED LIST ONLY (NEVER BULLETS):**
+
+When user asks for clipx/BNBChain reports without specifying which one, output the menu with **numbers** (1., 2., 3., …). Each line MUST start with a digit and period.
+
+**FORBIDDEN (never output this):**
+• tvl 24h / tvl 7d
+• fees 24h / fees 7d
+• revenue 24h / revenue 7d
+
+**REQUIRED (always output this):**
+1. TVL Rank — Top 10 protocols by Total Value Locked
+2. Fees Rank — Top 10 protocols by fees paid (24h/7d/30d)
+3. Revenue Rank — Top 10 protocols by revenue (24h/7d/30d)
+... (continue 4–8)
+
+Never use • or - or * for menu items. Always use 1. 2. 3. 4. 5. 6. 7. 8.
 
 ---
 
@@ -30,25 +66,39 @@ Your job is to:
 You **must never** attempt to re-scrape websites directly; always go through
 the ClipX API via this client.
 
-**Preferred: server-formatted output is the default.** For ClipX analyses, call the client (formatted output is on by default). The API returns the exact VPS-style table; the client prints it. You then display that output in a single code block (or `<pre>...</pre>` for Telegram) so the format matches the server and stays monospace. Example: `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type tvl_rank --timezone UTC`. If formatted output fails, fall back to parsing JSON and rendering the box-style table yourself as described below.
+**Preferred: server-formatted output is the default.** For ClipX analyses, call the client (formatted output is on by default). The API returns the exact VPS-style table; the client prints it. **You must wrap it in triple backticks or `<pre>`** — never plain text. Example output:
+
+```text
+================================================================================
+🚀 TOP 10 TVL PROTOCOLS ON BSC
+================================================================================
+...
+Source: @ClipX0_
+```
+
+Or for Telegram: `<pre>...(same table)...</pre>`. Without backticks or `<pre>`, columns break.
 
 **Never offer follow-up options.** After displaying the table, do **not** add any of these:
 - "If you want machine-readable output (pipe-separated lines or JSON), I can..."
 - "re-run with --no-formatted" or "parse into pipe-separated lines"
-- "Which would you like?" / "Want pipe, save, or post?"
+- "Which would you like?" / "Which do you prefer?" / "Want pipe, save, or post?"
 - "24h pipe?", "7d pipe?", "save to file?", "post to Moltbook/Telegram?"
 
-Show **only** the box-style table. Stop. Do not suggest alternatives unless the user explicitly asks.
+**GOOD:** [table] ← response ends here.  
+**BAD:** [table] + "If you want machine-readable output... Which do you prefer?" ← never do this.
 
-*(Optional, for local testing only: the skill includes `format_box.py`, which reads JSON from stdin and prints a box-style table. You do not need to run it; you render the table in your reply. See README for the pipe command.)*
+Show **only** the box-style table. Stop. Nothing after it.
+
+*(Optional, for local testing only: the skill includes `format_box.py`. You do not need to run it; you render the table in your reply.)*
 
 ---
 
 ## Interactive menu: "clipx" or "bnbchain analysis"
 
-When the user says **"clipx"**, **"bnbchain analysis"**, **"metrics for BNB Chain"**, **"show clipx options"**, or similar (asking for ClipX/BNBChain analytics without specifying which one), you **must** show this **numbered** menu (1., 2., 3., … — never bullets):
+When the user says **"clipx"**, **"bnbchain analysis"**, **"metrics for BNB Chain"**, **"show clipx options"**, or similar (asking for ClipX/BNBChain analytics without specifying which one), you **must** output this menu. **Use numbers (1. 2. 3. …), never bullets (• or -).**
 
-```
+**OUTPUT THIS EXACTLY — each line starts with a number:**
+
 🟡 ClipX / BNBChain Analysis — Choose one:
 
 1. TVL Rank — Top 10 protocols by Total Value Locked
@@ -61,9 +111,8 @@ When the user says **"clipx"**, **"bnbchain analysis"**, **"metrics for BNB Chai
 8. Network metrics — Latest block, gas price, sync state
 
 Reply with a number (1–8) to run that analysis.
-```
 
-**Do not** use bullet points (•) or ask for command names like "tvl 24h", "fees 7d", "meme 24h". **Always** use numbered items and instruct the user to reply with a number only.
+**NEVER output:** • tvl 24h • fees 7d • revenue 24h (bullets). **ALWAYS output:** 1. TVL Rank 2. Fees Rank 3. Revenue Rank (numbers).
 
 **When the user replies with a number (1–8):** Run the corresponding command:
 
@@ -309,11 +358,12 @@ When you call this skill and receive JSON from the API client, you **must**
 present the result in **box-style table format by default**. Do **not** show
 raw JSON to the user unless they explicitly request it.
 
-**Critical — monospace so columns don't break:**  
-You **must** wrap the entire table in a **single** block so it renders in monospace and supports one-click copy. Use **one** of these formats:
+**MANDATORY — wrap table in monospace block (never plain text):**
 
-- **For Telegram (preferred when the reply is shown in a Telegram bot chat):** Wrap the table in **HTML pre** so Telegram displays it in monospace with a copy-friendly block. Output the table inside `<pre>...</pre>`. Escape any `&`, `<`, `>` in the table as `&amp;`, `&lt;`, `&gt;`. The integration must send the message with **parse_mode=HTML** so Telegram renders the `<pre>` block in monospace (like the reference: aligned columns and one-click copy).
-- **Otherwise:** Use a single **markdown code block** (triple backticks, e.g. ` ```text ` … ` ``` `). Do not split the table across multiple blocks or mix non-code text inside the block.
+- **Option A (triple backticks):** Start your response with ` ```text `, then the table lines, then close with ` ``` `. This keeps columns aligned.
+- **Option B (Telegram):** Wrap in `<pre>...</pre>`. The bot must send with parse_mode=HTML. Escape `&` `<` `>` as `&amp;` `&lt;` `&gt;`.
+
+**Never** output the table as plain text — columns will break. Always use backticks or `<pre>`.
 
 **Steps every time you get a ClipX analysis response:**
 
@@ -388,9 +438,9 @@ column header and values:
 - Next N lines: One row per item, same widths: `rank | name (padded to 22) | category (padded to 16) | metric_value`
 - Then: Double-line separator; then `Source: @ClipX0_`; then close the code block with ` ``` `.
 
-You **must** use this box-style table as the default, **always inside a code block**. Optionally add 1–2 sentences of interpretation after the code block (e.g. which category dominates). Do not include raw JSON in your answer unless the user asks for it.
+You **must** use this box-style table as the default, **always inside a code block**. Do not include raw JSON unless the user asks. **Do not add any text after the table** — no interpretation, no follow-up questions, no options. The table is the complete response.
 
-**Do not recommend or show pipe-separated format:** Do **not** offer or suggest "export as pipe lines", "pipe-separated output", or "pipe-separated format". Do **not** display a separate "Pipe-separated output:" section or raw pipe-delimited lines (e.g. `1|Name|Category|Value`). Present **only** the box-style table (or `<pre>` for Telegram). If you add a follow-up, keep it generic (e.g. "Want a different interval or another metric?") and do not mention pipe-separated export, save to file, or post/share unless the user explicitly asks.
+**Do not recommend or show pipe-separated format:** Do **not** offer or suggest "export as pipe lines", "pipe-separated output", "parse into pipes", or "re-run with --no-formatted". Present **only** the box-style table (or `<pre>` for Telegram). Nothing after it.
 
 **Forbidden follow-up options — never offer these:** You must **never** add suggestions after the table. Forbidden: "If you want machine-readable output...", "re-run with --no-formatted", "parse into pipe-separated lines", "24h pipe", "7d pipe", "save to file", "post to Moltbook/Telegram", "Which would you like?". Simply show the box-style table and **stop**. Do not offer any alternatives.
 
