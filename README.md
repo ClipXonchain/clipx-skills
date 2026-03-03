@@ -103,6 +103,8 @@ tool to execute:
 
 **Formatted table is the default** for clipx mode; the CLI prints the server-formatted table (identical to VPS output). The agent displays it in a code block or `<pre>`. Use `--no-formatted` to get raw JSON instead.
 
+**Interactive menu:** When the user says "clipx" or "bnbchain analysis" without specifying which analysis, the agent shows a numbered menu (1–8) and waits for the user to reply with a number to run that analysis. See SKILL.md for the full menu and mapping.
+
 ---
 
 ### Local testing: box-style table

@@ -18,18 +18,63 @@ The ClipX backend (running on a private server) performs:
 Your job is to:
 
 1. Decide **when** these live metrics / rankings are needed.
-2. Call `api_client_cli.py` with the correct arguments.
-3. Parse the JSON response.
-4. **By default**, present the result in **box-style table format** (see below). Never show raw JSON to the user unless they explicitly ask for it.
+2. **When the user says "clipx" or "bnbchain analysis"** (without specifying which analysis), show the numbered menu (see "Interactive menu" below) and wait for them to reply with 1–8.
+3. Call `api_client_cli.py` with the correct arguments.
+4. Parse the JSON response.
+5. **By default**, present the result in **box-style table format** (see below). Never show raw JSON to the user unless they explicitly ask for it.
 
 You **must never** attempt to re-scrape websites directly; always go through
 the ClipX API via this client.
 
 **Preferred: server-formatted output is the default.** For ClipX analyses, call the client (formatted output is on by default). The API returns the exact VPS-style table; the client prints it. You then display that output in a single code block (or `<pre>...</pre>` for Telegram) so the format matches the server and stays monospace. Example: `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type tvl_rank --timezone UTC`. If formatted output fails, fall back to parsing JSON and rendering the box-style table yourself as described below.
 
-**Never offer pipe-separated, save, or post options.** Do not ask "24h pipe?", "7d pipe?", "save to file?", "post to Moltbook/Telegram?" — these are removed from the skill. Show only the box-style table; optionally ask "Want a different interval or metric?"
+**Never offer follow-up options.** After displaying the table, do **not** add any of these:
+- "If you want machine-readable output (pipe-separated lines or JSON), I can..."
+- "re-run with --no-formatted" or "parse into pipe-separated lines"
+- "Which would you like?" / "Want pipe, save, or post?"
+- "24h pipe?", "7d pipe?", "save to file?", "post to Moltbook/Telegram?"
+
+Show **only** the box-style table. Stop. Do not suggest alternatives unless the user explicitly asks.
 
 *(Optional, for local testing only: the skill includes `format_box.py`, which reads JSON from stdin and prints a box-style table. You do not need to run it; you render the table in your reply. See README for the pipe command.)*
+
+---
+
+## Interactive menu: "clipx" or "bnbchain analysis"
+
+When the user says **"clipx"**, **"bnbchain analysis"**, **"metrics for BNB Chain"**, **"show clipx options"**, or similar (asking for ClipX/BNBChain analytics without specifying which one), you **must** show this **numbered** menu (1., 2., 3., … — never bullets):
+
+```
+🟡 ClipX / BNBChain Analysis — Choose one:
+
+1. TVL Rank — Top 10 protocols by Total Value Locked
+2. Fees Rank — Top 10 protocols by fees paid (24h/7d/30d)
+3. Revenue Rank — Top 10 protocols by revenue (24h/7d/30d)
+4. DApps Rank — Top 10 DApps by users (7d)
+5. Full Ecosystem — DeFi, Games, Social, NFTs, AI, Infra, RWA leaders
+6. Social Hype — Top 10 social hype tokens
+7. Meme Rank — Top 10 meme tokens by score
+8. Network metrics — Latest block, gas price, sync state
+
+Reply with a number (1–8) to run that analysis.
+```
+
+**Do not** use bullet points (•) or ask for command names like "tvl 24h", "fees 7d", "meme 24h". **Always** use numbered items and instruct the user to reply with a number only.
+
+**When the user replies with a number (1–8):** Run the corresponding command:
+
+| # | analysis_type | Command |
+|---|---------------|---------|
+| 1 | tvl_rank | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type tvl_rank --timezone UTC` |
+| 2 | fees_rank | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type fees_rank --interval 24h --timezone UTC` |
+| 3 | revenue_rank | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type revenue_rank --interval 24h --timezone UTC` |
+| 4 | dapps_rank | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type dapps_rank --timezone UTC` |
+| 5 | fulleco | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type fulleco --timezone UTC` |
+| 6 | social_hype | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type social_hype --interval 24 --timezone UTC` |
+| 7 | meme_rank | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type meme_rank --interval 24 --timezone UTC` |
+| 8 | metrics_basic | `python "{baseDir}/api_client_cli.py" --mode metrics_basic` |
+
+For **2** (fees) and **3** (revenue), you may ask "24h, 7d, or 30d?" if the user wants a different interval, or default to 24h. Display the result in a code block (or `<pre>` for Telegram) as usual.
 
 ---
 
@@ -343,7 +388,7 @@ You **must** use this box-style table as the default, **always inside a code blo
 
 **Do not recommend or show pipe-separated format:** Do **not** offer or suggest "export as pipe lines", "pipe-separated output", or "pipe-separated format". Do **not** display a separate "Pipe-separated output:" section or raw pipe-delimited lines (e.g. `1|Name|Category|Value`). Present **only** the box-style table (or `<pre>` for Telegram). If you add a follow-up, keep it generic (e.g. "Want a different interval or another metric?") and do not mention pipe-separated export, save to file, or post/share unless the user explicitly asks.
 
-**Forbidden follow-up options — never offer these:** You must **never** present options like "24h pipe", "7d pipe", "save 24h filename", "post 24h moltbook", "post 24h telegram", "both" (when meaning pipe outputs), or any variant of pipe-separated export, save-to-file, or post-to-channel. These options are **removed from this skill**. Do not ask "Which do you want: pipe, save, or post?" — simply show the box-style table and optionally ask "Want a different interval or metric?"
+**Forbidden follow-up options — never offer these:** You must **never** add suggestions after the table. Forbidden: "If you want machine-readable output...", "re-run with --no-formatted", "parse into pipe-separated lines", "24h pipe", "7d pipe", "save to file", "post to Moltbook/Telegram", "Which would you like?". Simply show the box-style table and **stop**. Do not offer any alternatives.
 
 ---
 
@@ -353,8 +398,8 @@ You **must** use this box-style table as the default, **always inside a code blo
   - Never request or generate images or base64-encoded images.
   - This skill is intended for JSON/text analytics only.
 
-- **No pipe-separated export or suggestions**:
-  - Do not offer "export as pipe lines", "pipe-separated output", "24h pipe", "7d pipe", "save to file", "post to Moltbook/Telegram", or any similar options. Present only the box-style table (or `<pre>` for Telegram). These features are not part of this skill.
+- **No follow-up suggestions after the table**:
+  - Do not offer machine-readable output, --no-formatted, pipe-separated lines, save, post, or "Which would you like?". Show the table and stop. No alternatives.
 
 - **No direct scraping**:
   - Do not browse to DappBay, DefiLlama, or Binance yourself.
