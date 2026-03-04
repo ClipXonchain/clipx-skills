@@ -1,122 +1,232 @@
-## ClipX BNBChain API Client Skill (Public)
+# ClipX Skills
 
-This folder is the **public skill** you can upload to **ClawHub**. It contains
-only a thin client that calls your **private ClipX BNBChain API** and returns
-text-only JSON for:
+> BNB Chain analytics for OpenClaw — TVL, fees, revenue, DApps, meme rank, and more. No API keys. No scraping on the client.
 
-- Core BNB Smart Chain metrics (basic, block stats, address).
-- ClipX-style rankings (TVL, fees, revenue, DApps, full ecosystem, social hype, meme rank).
-
-The actual scraping and analytics logic (Playwright, DefiLlama, DappBay,
-Binance page structure, etc.) lives **behind your API** and is **not**
-included here.
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-green.svg)](https://openclaw.ai)
+[![BNB Chain](https://img.shields.io/badge/BNB%20Chain-BSC-yellow.svg)](https://bnbchain.org)
 
 ---
 
-### Files in This Public Skill
+## Table of Contents
 
-- `SKILL.md`  
-  OpenClaw skill metadata and instructions on how to use the client via
-  `system.run`.
-
-- `api_client_cli.py`  
-  Tiny Python CLI that calls your hosted API and prints the JSON response.
-  This is what the agent will execute.
-
-- `format_box.py`  
-  Optional helper: reads JSON from stdin and prints a box-style table. Use
-  for local testing only (see below); the agent renders tables in its reply
-  per `SKILL.md`.
-
-- `requirements.txt`  
-  Only `requests` is required on the client side.
-
-Place this folder (with these files) under your workspace `skills`
-directory when testing locally, or publish it to ClawHub.
-
-**If the menu shows bullets (•) or "Reply with tvl 24h" instead of numbers:**  
-1. **ClawHub:** Re-publish this skill (`clawhub publish .`) so the updated SKILL.md is used.  
-2. **Workspace:** If you have both `f:\skill\SKILL.md` (root) and `ClipX_Skills\SKILL.md`, ensure the agent loads the ClipX skill. The root SKILL has been updated with the numbered menu too.  
-3. **Both skills** now mandate: numbered list (1–8), "Reply with a number" — never bullets or command names.
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Workflow](#workflow)
+- [Quick Start](#quick-start)
+- [File Structure](#file-structure)
+- [API Reference](#api-reference)
+- [Configuration](#configuration)
+- [Local Testing](#local-testing)
+- [Server-Side API](#server-side-api)
+- [Publishing to ClawHub](#publishing-to-clawhub)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-### Client Requirements
+## Overview
 
-- **Python**: 3.10–3.12 recommended.
-- **Dependencies**:
+**ClipX Skills** is a thin public client for the ClipX BNBChain API. It enables OpenClaw agents to fetch live BNB Smart Chain metrics and rankings via a simple CLI — no scraping logic, no Playwright, no API keys on the client.
 
-  ```bash
-  pip install -r requirements.txt
-  ```
+### Features
 
-  Installs:
+| Category | Metrics |
+|----------|---------|
+| **Rankings** | TVL, fees, revenue, DApps, full ecosystem, social hype, meme rank, market insight |
+| **Network** | Latest block, gas price, sync state, block stats, address balance |
+| **Output** | Text-only JSON, pre-formatted tables, monospace code blocks |
 
-  - `requests`
+### Design Principles
 
-No Playwright, FastAPI, or other heavy dependencies are needed here.
+- **Thin client** — All scraping and analytics run on your private API. This skill only calls HTTP endpoints.
+- **Text-only** — No images or binary data. Safe for Telegram, Discord, and text-based agents.
+- **Zero secrets** — No API keys required. Configure `CLIPX_API_BASE` if you host your own API.
 
 ---
 
-### Configuring the API Base URL
+## Architecture
 
-By default, `api_client_cli.py` uses this logic:
-
-1. If the environment variable `CLIPX_API_BASE` is set, it uses that
-   (e.g. `https://api.clipx.app`).
-2. Otherwise, it falls back to the hard-coded base URL inside
-   `get_api_base()` (you should edit this before publishing).
-
-To configure via environment:
-
-```bash
-export CLIPX_API_BASE="https://your-clipx-api.com"
+```mermaid
+flowchart LR
+    User[User] --> Agent[OpenClaw Agent]
+    Agent --> CLI[api_client_cli.py]
+    CLI --> API[ClipX API]
+    API --> Sources[DefiLlama / DappBay / Binance]
+    API --> CLI
+    CLI --> Agent
+    Agent --> User
 ```
 
-On Windows PowerShell:
+**Flow:** User says "clipx" or "bnbchain" → Agent runs `api_client_cli.py` → CLI calls ClipX API (VPS) → API fetches from DefiLlama, DappBay, Binance → Returns JSON/formatted table → Agent displays result.
 
-```powershell
+---
+
+## Workflow
+
+### Interactive Menu Flow
+
+```mermaid
+flowchart TD
+    A[User: clipx or bnbchain] --> B[Agent shows menu 1-10]
+    B --> C[User replies with number]
+    C --> D[Agent runs api_client_cli.py]
+    D --> E[CLI calls ClipX API]
+    E --> F[API returns formatted table]
+    F --> G[Agent displays table in code block]
+```
+
+### Menu Options
+
+| # | Analysis | Description |
+|---|----------|-------------|
+| 1 | TVL Rank | Top 10 protocols by Total Value Locked |
+| 2 | Fees Rank | Top 10 by fees paid (24h/7d/30d) |
+| 3 | Revenue Rank | Top 10 by revenue (24h/7d/30d) |
+| 4 | DApps Rank | Top 10 DApps by users (7d) |
+| 5 | Full Ecosystem | DeFi, Games, Social, NFTs, AI, Infra, RWA leaders |
+| 6 | Social Hype | Top 10 social hype tokens |
+| 7 | Meme Rank | Top 10 meme tokens by score |
+| 8 | Network metrics | Latest block, gas price, sync state |
+| 9 | Market Insight | Binance 24h volume leaders (API snapshot) |
+| 10 | Market Insight (Live) | Volume Leaders + Top Gainers + Top Losers (API snapshot) |
+
+---
+
+## Quick Start
+
+### 1. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Only `requests` is required. No Playwright or heavy dependencies.
+
+### 2. Configure API base URL (optional)
+
+```bash
+# Linux / macOS
+export CLIPX_API_BASE="https://your-clipx-api.com"
+
+# Windows PowerShell
 $env:CLIPX_API_BASE = "https://your-clipx-api.com"
 ```
 
----
+Default: `http://5.189.145.246:8000`
 
-### How Agents Should Call the Client
+### 3. Publish to ClawHub
 
-The model instructions in `SKILL.md` tell the agent to use the `system.run`
-tool to execute:
+```bash
+cd ClipX_Skills
+clawhub publish . \
+  --slug clipx-bnbchain-api-client \
+  --name "ClipX BNBChain Metrics & Rankings (API Client)" \
+  --version 1.0.0 \
+  --tags latest,bnbchain,metrics,clipx
+```
 
-- **Core metrics**:
+### 4. Use in OpenClaw
 
-  ```bash
-  python "{baseDir}/api_client_cli.py" --mode metrics_basic
-  python "{baseDir}/api_client_cli.py" --mode metrics_block --blocks 100
-  python "{baseDir}/api_client_cli.py" --mode metrics_address --address 0x...
-  ```
-
-- **ClipX analyses** (formatted table is default; use `--no-formatted` for raw JSON):
-
-  ```bash
-  python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type tvl_rank --timezone UTC
-  python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type fees_rank --interval 24h --timezone UTC
-  python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type revenue_rank --interval 7d --timezone UTC
-  python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type dapps_rank --timezone UTC
-  python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type fulleco --timezone UTC
-  python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type social_hype --interval 24 --timezone UTC
-  python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type meme_rank --interval 24 --timezone UTC
-  ```
-
-**Formatted table is the default** for clipx mode; the CLI prints the server-formatted table (identical to VPS output). The agent displays it in a code block or `<pre>`. Use `--no-formatted` to get raw JSON instead.
-
-**Interactive menu:** When the user says "clipx" or "bnbchain analysis" without specifying which analysis, the agent shows a numbered menu (1–8) and waits for the user to reply with a number to run that analysis. See SKILL.md for the full menu and mapping.
+1. Install the skill from ClawHub.
+2. Say **"clipx"** or **"bnbchain"**.
+3. Agent shows numbered menu (1–10).
+4. Reply with a number (e.g. `7` for meme rank, `10` for live Binance data).
+5. Agent runs the command and displays the formatted table.
 
 ---
 
-### Local testing: box-style table
+## File Structure
 
-Use `format_box.py` to print a box-style table. You can either fetch and format in one command, or pipe from the CLI.
+| File | Purpose |
+|------|---------|
+| `SKILL.md` | OpenClaw skill metadata and agent instructions. Defines menu format, table display rules, and command mapping. |
+| `api_client_cli.py` | Thin HTTP client. Calls ClipX API and prints JSON or formatted table to stdout. |
+| `format_box.py` | Optional helper for local testing. Reads JSON from stdin and prints box-style table. |
+| `requirements.txt` | Python dependencies (`requests` only). |
 
-**One command (fetch + format):**
+---
+
+## API Reference
+
+### Modes
+
+| Mode | Description | Example |
+|------|-------------|---------|
+| `metrics_basic` | Network status (block, gas, sync) | `--mode metrics_basic` |
+| `metrics_block` | Block stats over N blocks | `--mode metrics_block --blocks 100` |
+| `metrics_address` | Balance and tx count for address | `--mode metrics_address --address 0x...` |
+| `clipx` | ClipX rankings (requires `--analysis-type`) | `--mode clipx --analysis-type tvl_rank` |
+
+### ClipX Analysis Types
+
+| Type | Interval | Description |
+|------|----------|-------------|
+| `tvl_rank` | — | Top protocols by TVL |
+| `fees_rank` | 24h, 7d, 30d | Top by fees paid |
+| `revenue_rank` | 24h, 7d, 30d | Top by revenue |
+| `dapps_rank` | — | Top DApps by users (7d) |
+| `fulleco` | — | Full ecosystem leaders |
+| `social_hype` | 24 | Social hype tokens |
+| `meme_rank` | 24 | Meme token scores |
+
+### Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--analysis-type` | (required for clipx) | One of the types above |
+| `--interval` | 24h | Used by fees_rank, revenue_rank, social_hype, meme_rank |
+| `--timezone` | UTC | Timestamp timezone |
+| `--formatted` | default | Print server-formatted table |
+| `--no-formatted` | — | Print raw JSON |
+
+### Example Commands
+
+```bash
+# Core metrics
+python api_client_cli.py --mode metrics_basic
+python api_client_cli.py --mode metrics_block --blocks 100
+python api_client_cli.py --mode metrics_address --address 0x0000000000000000000000000000000000000000
+
+# ClipX rankings
+python api_client_cli.py --mode clipx --analysis-type tvl_rank --timezone UTC
+python api_client_cli.py --mode clipx --analysis-type fees_rank --interval 24h --timezone UTC
+python api_client_cli.py --mode clipx --analysis-type meme_rank --interval 24 --timezone UTC
+```
+
+---
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `CLIPX_API_BASE` | Base URL for ClipX API (e.g. `https://api.clipx.app`). Overrides hard-coded default. |
+
+### Platform-Specific Setup
+
+**Linux / macOS:**
+```bash
+export CLIPX_API_BASE="https://your-api.com"
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:CLIPX_API_BASE = "https://your-api.com"
+```
+
+**Windows (cmd):**
+```cmd
+set CLIPX_API_BASE=https://your-api.com
+```
+
+---
+
+## Local Testing
+
+### Using format_box.py
+
+Fetch and format in one command:
 
 ```bash
 python format_box.py --analysis-type tvl_rank
@@ -124,65 +234,56 @@ python format_box.py --analysis-type meme_rank --interval 24 --timezone UTC
 python format_box.py --analysis-type fees_rank --interval 7d
 ```
 
-Optional: `--interval` (default `24h`), `--timezone` (default `UTC`). Supported `--analysis-type`: `tvl_rank`, `fees_rank`, `revenue_rank`, `dapps_rank`, `fulleco`, `social_hype`, `meme_rank`.
-
-**Or pipe from the client:**
+Or pipe from the client:
 
 ```bash
 python api_client_cli.py --mode clipx --analysis-type tvl_rank --timezone UTC | python format_box.py
 ```
 
-`format_box.py` reads JSON from stdin (UTF-8 or UTF-8 BOM) when no `--analysis-type` is given.
+When no `--analysis-type` is given, `format_box.py` reads JSON from stdin (UTF-8 or UTF-8 BOM).
 
 ---
 
-### Telegram: monospace and one-click copy
+## Server-Side API
 
-For the ClipX table to appear in **Telegram** in monospace (aligned columns, copy-friendly block like the reference), the message must be sent with **parse_mode=HTML**. The agent is instructed to wrap the table in `<pre>...</pre>`. Your bot or OpenClaw→Telegram bridge should send the agent’s reply with **parse_mode=HTML** so Telegram renders the `<pre>` block in monospace. Do not strip the `<pre>` tags when forwarding to Telegram.
+This skill assumes a **private ClipX API** hosted separately. The API is not included in the ClawHub publish.
 
----
+### Endpoints
 
-### Private API (Server Side)
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/bnb/metrics/basic` | Network metrics |
+| `GET /api/bnb/metrics/block-stats?blocks=N` | Block statistics |
+| `GET /api/bnb/metrics/address?address=0x...` | Address balance and tx count |
+| `GET /api/clipx/analysis?t=TYPE&interval=24h&tz=UTC` | ClipX rankings |
 
-This folder assumes you have a **separate private repo or directory** that
-hosts your actual API service, for example:
-
-- `clipx_api/main.py` (FastAPI app).
-- `clipx_api/requirements.txt` (FastAPI, uvicorn, Playwright, pytz, etc.).
-
-The API should expose endpoints like:
-
-- `GET /api/bnb/metrics/basic`
-- `GET /api/bnb/metrics/block-stats?blocks=100`
-- `GET /api/bnb/metrics/address?address=0x...`
-- `GET /api/clipx/analysis?t=tvl_rank&interval=24h&tz=UTC`
-
-Each endpoint should return JSON shaped like:
+### Response Shape (ClipX Analysis)
 
 ```json
 {
   "ok": true,
   "analysis_type": "tvl_rank",
   "timestamp": "2026-03-03T17:03:08.394Z",
-  "caption": "…",
+  "caption": "...",
   "source": "@ClipX0_",
-  "items": [ { "rank": 1, "name": "…", "metric_label": "TVL", "metric_value": "$1.92B" } ],
+  "items": [
+    {
+      "rank": 1,
+      "name": "PancakeSwap AMM",
+      "category": "Dexs",
+      "metric_label": "TVL",
+      "metric_value": "$1.92B"
+    }
+  ],
   "meta": { "interval": "24h" }
 }
 ```
 
-On error:
-
-```json
-{ "ok": false, "error": "Human-readable error" }
-```
-
-This server-side code should **not** be included in the ClawHub skill
-bundle if you want to keep it private.
+On error: `{ "ok": false, "error": "Human-readable error" }`
 
 ---
 
-### Publishing to ClawHub
+## Publishing to ClawHub
 
 From the `ClipX_Skills` folder:
 
@@ -194,454 +295,22 @@ clawhub publish . \
   --tags latest,bnbchain,metrics,clipx
 ```
 
-This publishes only the thin client and `SKILL.md`, keeping your real logic
-behind your API.
-
-## BNB Chain / ClipX Metrics Skill (Text-Only, No API Keys)
-
-### Overview
-
-This skill bundle provides two related text-only capabilities that agents
-can call safely without any API keys:
-
-- **Core BNB Smart Chain metrics** via **public RPC**.
-- **ClipX-style BNBChain rankings/analytics** (TVL, fees, revenue, DApps,
-  full ecosystem, social hype, meme rank) based on your existing scripts.
-
-Everything is returned as **pure JSON/text**. No images or binary data are
-produced by the CLIs; image generation in your original scripts remains
-unused by this skill.
+This publishes only the thin client and `SKILL.md`. Your API logic stays private.
 
 ---
 
-### Files in This Skill Package
+## Troubleshooting
 
-- **`bnbchain_metrics_skill.py`**  
-  Core implementation of the text-only BNB Chain metrics skill (public JSON-RPC;
-  no `web3` dependency).
-
-- **`bnbchain_metrics_cli.py`**  
-  CLI wrapper around `bnbchain_metrics_skill.py` for OpenClaw’s `system.run`.
-
-- **`bnbchain_metrics_tool.json`**  
-  JSON schema definition for registering core metrics as a tool (for non‑OpenClaw
-  frameworks).
-
-- **`clipx_text_skill.py`**  
-  Text-only aggregator around your existing ClipX scripts:
-  - `tvl_ranking_template_fill.py`
-  - `fees_ranking_template_fill.py`
-  - `revenue_ranking_template_fill.py`
-  - `dapps_ranking_template_fill.py`
-  - `fulleco_template_fill.py`
-  - `social_hype_template_fill.py`
-  - `meme_rank_template_fill.py`
-
-- **`clipx_text_cli.py`**  
-  CLI wrapper that exposes all ClipX-style analyses as JSON (caption + ranked
-  items, with `source: "@ClipX0_"`).
-
-- **`example_agent_integration.py`**  
-  Minimal example showing how to call the core metrics skill from a Python agent/tool handler.
-
-- **`SKILL.md`**  
-  OpenClaw skill definition and agent instructions for both CLIs.
-
-- **`requirements.txt`**  
-  Python dependencies needed to run everything.
-
-Place all of these files together in your project (for example, in `f:\skill`).
+| Issue | Solution |
+|-------|----------|
+| Menu shows bullets (•) instead of numbers | Re-publish the skill: `clawhub publish .` |
+| Table not in monospace | Agent should wrap output in triple backticks. Ensure SKILL.md is up to date. |
+| HTTP read timeout | Default timeout is 180s. Long analyses (fulleco, social_hype) may take up to 3 minutes. |
+| `Connection refused` or `Network error` | Check `CLIPX_API_BASE`. Ensure the API server is running and reachable. |
+| `analysis-type required` | For clipx mode, always pass `--analysis-type` with a valid value. |
 
 ---
 
-### Requirements and Installation
+## License
 
-#### Supported Python
-
-- Recommended: **Python 3.11 or 3.12**
-  - The code is tested on **3.12.0** on Windows.
-
-#### 1. Create and activate a virtual environment (optional but recommended)
-
-```bash
-python -m venv .venv
-```
-
-On **Windows PowerShell**:
-
-```bash
-.\.venv\Scripts\Activate.ps1
-```
-
-On **Windows cmd**:
-
-```bash
-.\.venv\Scripts\activate.bat
-```
-
-On **Linux/macOS**:
-
-```bash
-source .venv/bin/activate
-```
-
-#### 2. Install dependencies
-
-From the folder that contains `requirements.txt`:
-
-```bash
-pip install -r requirements.txt
-```
-
-This installs:
-
-- **`requests`**: HTTP client (used for JSON-RPC and logos).
-- **`python-dotenv`**: loads `.env` (optional, used by your original scripts).
-- **`playwright`**: headless browser used by your template scripts to scrape pages.
-- **`pytz`**: timezone handling (optional but recommended).
-
-> Note: `tweepy` is *not* required for this skill. Your social/meme scripts
-> only import it optionally, and the text-only wrappers avoid posting to Twitter.
-
-#### 3. Install Playwright browsers (required for scraping)
-
-Playwright must download a Chromium build:
-
-```bash
-playwright install chromium
-```
-
-Run this once inside the same virtual environment.
-
----
-
-### Public RPC Endpoint (No API Key) – Core Metrics
-
-By default, the skill connects to:
-
-- `https://bsc-dataseed1.bnbchain.org`
-
-This is a **public BNB Smart Chain RPC endpoint** that does **not** require any
-authentication or API key. You may replace it with a different public BSC RPC
-URL if needed (for example, another BNB Chain public node or a self-hosted node).
-
-You can customize the RPC URL:
-
-- In Python by passing the `rpc_url` argument.
-- From agents via the `rpc_url` parameter in the tool schema.
-
----
-
-### Core Metrics: Python Usage (Direct)
-
-Basic usage from Python:
-
-```python
-from bnbchain_metrics_skill import (
-    BnbChainMetricsSkill,
-    run_bnbchain_metrics_skill,
-)
-
-# One-shot helpers
-basic = run_bnbchain_metrics_skill("basic")
-print(basic)
-
-block_stats = run_bnbchain_metrics_skill("block_stats", blocks=200)
-print(block_stats)
-
-address_stats = run_bnbchain_metrics_skill(
-    "address",
-    address="0x0000000000000000000000000000000000000000",
-)
-print(address_stats)
-
-# Reusing a single instance (more efficient if you call it many times)
-skill = BnbChainMetricsSkill()
-print(skill.handle_request(metric_type="basic"))
-print(skill.handle_request(metric_type="block_stats", blocks=100))
-print(
-    skill.handle_request(
-        metric_type="address",
-        address="0x0000000000000000000000000000000000000000",
-    )
-)
-```
-
-Example output (shape only, numbers will differ on live chain):
-
-```json
-{
-  "metric_type": "basic",
-  "data": {
-    "latest_block": 41500000,
-    "chain_id": 56,
-    "network_id": 56,
-    "gas_price_gwei": 3.25,
-    "syncing": false
-  },
-  "source": "@ClipX0_"
-}
-```
-
-All responses are **JSON-safe Python dicts** and contain only text/number/boolean
-fields, so they can be serialized to JSON and displayed as text by agents.
-
----
-
-### Core Metrics: Agent / Tool Integration
-
-You can register this skill as a tool named `bnbchain_metrics`.
-
-#### Tool schema
-
-The file `bnbchain_metrics_tool.json` contains a ready-to-use JSON schema:
-
-- **`name`**: `bnbchain_metrics`
-- **`description`**: Explains that it fetches BNB Chain metrics using public RPC.
-- **`parameters`**:
-  - **`metric_type`** (string, required): one of:
-    - `basic`
-    - `block_stats`
-    - `address`
-  - **`blocks`** (integer, optional): used when `metric_type = "block_stats"`.
-  - **`address`** (string, optional): used when `metric_type = "address"`.
-  - **`rpc_url`** (string, optional): custom public RPC if you do not want to use the default.
-
-This schema works well for:
-
-- OpenAI / OpenRouter tools (function calling).
-- OpenClaw-style tool systems.
-- Most JSON-schema-based agent frameworks.
-
-#### Tool handler function
-
-Use `example_agent_integration.py` as a template. The core handler looks like:
-
-```python
-from typing import Any, Dict
-from bnbchain_metrics_skill import run_bnbchain_metrics_skill
-
-def bnbchain_metrics_tool_handler(args: Dict[str, Any]) -> Dict[str, Any]:
-    return run_bnbchain_metrics_skill(
-        metric_type=args["metric_type"],
-        blocks=args.get("blocks"),
-        address=args.get("address"),
-        rpc_url=args.get("rpc_url") or None,
-    )
-```
-
-Register `bnbchain_metrics_tool_handler` as the implementation for the
-`bnbchain_metrics` tool name in your agent runtime.
-
----
-
-### Supported Metrics in Detail
-
-#### 1. `basic`
-
-- **Purpose**: Get high-level BNB Chain network status.
-- **Input**:
-
-```json
-{ "metric_type": "basic" }
-```
-
-- **Output** (`data` fields):
-  - `latest_block` (int): latest block number.
-  - `chain_id` (int): chain ID (56 for mainnet).
-  - `network_id` (int): network ID.
-  - `gas_price_gwei` (float): current gas price in Gwei.
-  - `syncing` (bool): whether the node is still catching up.
-
-#### 2. `block_stats`
-
-- **Purpose**: Analyze recent blocks for timing and gas usage trends.
-- **Input**:
-
-```json
-{ "metric_type": "block_stats", "blocks": 200 }
-```
-
-- **Output** (`data` fields):
-  - `from_block` (int): first block in the sampled range.
-  - `to_block` (int): last (latest) block in the sampled range.
-  - `blocks_considered` (int): number of blocks actually processed.
-  - `avg_block_time_seconds` (float): average time between blocks in seconds.
-  - `avg_gas_used` (float): average `gasUsed` across the sampled blocks.
-
-> Larger `blocks` values smooth the averages but generate more RPC calls.
-
-#### 3. `address`
-
-- **Purpose**: Inspect a specific address on BNB Chain.
-- **Input**:
-
-```json
-{
-  "metric_type": "address",
-  "address": "0x0000000000000000000000000000000000000000"
-}
-```
-
-- **Output** (`data` fields):
-  - `address` (string): checksum-normalized BSC address.
-  - `balance_bnb` (float): balance in BNB (not Wei).
-  - `tx_count` (int): number of transactions sent by this address.
-
----
-
-### ClipX Text Analyses (All Template Scripts)
-
-The file `clipx_text_skill.py` exposes your existing scripts as a **single
-text-only interface** via:
-
-```python
-from clipx_text_skill import run_clipx_text_skill
-
-result = run_clipx_text_skill(
-    analysis_type="tvl_rank",  # see list below
-    interval="24h",            # only used for some types
-    timezone="UTC",
-)
-```
-
-Supported `analysis_type` values:
-
-- `tvl_rank` – Top BNBChain protocols by TVL (from DefiLlama).
-- `fees_rank` – Top protocols by fees (24h, 7d, 30d) on BSC.
-- `revenue_rank` – Top protocols by protocol revenue (24h, 7d, 30d) on BSC.
-- `dapps_rank` – Top DApps by active users (7d) from DappBay.
-- `fulleco` – Full ecosystem leaders (DeFi, Games, Social, NFTs, AI, Infra, RWA).
-- `social_hype` – Social hype tokens (Binance “social hype” page).
-- `meme_rank` – Meme token rank/score (Binance trenches).
-
-Each call returns JSON with:
-
-- `analysis_type`
-- `interval` (where applicable)
-- `timestamp`
-- `caption` – your existing ClipX caption text.
-- `source` – always `@ClipX0_`.
-- `items` – list of:
-  - `rank` (int)
-  - `name` (str)
-  - `category` (str or null)
-  - `metric_label` (str)
-  - `metric_value` (str)
-
-#### ClipX text CLI (for OpenClaw / system.run)
-
-To use this from an agent or terminal:
-
-```bash
-python clipx_text_cli.py --analysis-type tvl_rank --timezone UTC
-```
-
-More examples:
-
-- TVL ranking:
-
-  ```bash
-  python clipx_text_cli.py --analysis-type tvl_rank --timezone UTC
-  ```
-
-- Fees ranking (24h):
-
-  ```bash
-  python clipx_text_cli.py --analysis-type fees_rank --interval 24h --timezone UTC
-  ```
-
-- Revenue ranking (7d):
-
-  ```bash
-  python clipx_text_cli.py --analysis-type revenue_rank --interval 7d --timezone UTC
-  ```
-
-- DApps ranking:
-
-  ```bash
-  python clipx_text_cli.py --analysis-type dapps_rank --timezone UTC
-  ```
-
-- Full ecosystem:
-
-  ```bash
-  python clipx_text_cli.py --analysis-type fulleco --timezone UTC
-  ```
-
-- Social hype tokens:
-
-  ```bash
-  python clipx_text_cli.py --analysis-type social_hype --interval 24 --timezone UTC
-  ```
-
-- Meme rank:
-
-  ```bash
-  python clipx_text_cli.py --analysis-type meme_rank --interval 24 --timezone UTC
-  ```
-
-The CLI prints a single JSON object on stdout with the shape described above.
-
----
-
-### Text-Only Guarantee
-
-- The skill **never** produces images or binary data.
-- All endpoints return **Python dicts** that are JSON-serializable.
-- Agents should display these results as plain text, JSON, or formatted text.
-
-This makes the skill safe and efficient for text-only agent environments.
-
----
-
-### Error Handling
-
-The skill uses Python exceptions for clear, predictable failure modes:
-
-- **Invalid metric type**:
-  - Raises `ValueError` with a message listing supported types.
-- **Missing required parameters**:
-  - `block_stats` without valid `blocks` (or `blocks <= 1`) → `ValueError`.
-  - `address` without `address` value → `ValueError`.
-- **RPC connectivity issues**:
-  - On initialization, if the RPC is unreachable → `RuntimeError`.
-  - When fetching specific blocks (e.g. from a pruned node) → `RuntimeError`.
-
-At the agent level, you should:
-
-- Catch these exceptions.
-- Return a user-friendly error string (still text-only) back to the user.
-
----
-
-### Security and Privacy
-
-- Uses only **public on-chain data** from BNB Smart Chain.
-- Does **not** handle private keys or sensitive data.
-- Safe to expose as a public tool, subject only to the rate limits and policies
-  of the chosen public RPC endpoint.
-
----
-
-### Quick Start Checklist (for Agents)
-
-1. **Copy files** (`bnbchain_metrics_skill.py`, `bnbchain_metrics_cli.py`,
-   `clipx_text_skill.py`, `clipx_text_cli.py`, all `*_template_fill.py` files,
-   `SKILL.md`, `requirements.txt`) into your project/skill folder.
-2. **Create and activate a virtual environment** (Python 3.11–3.12 recommended).
-3. **Install dependencies** with `pip install -r requirements.txt`.
-4. **Install Playwright Chromium** with `playwright install chromium`.
-5. For **OpenClaw**:
-   - Ensure `SKILL.md` is present (this file describes how to call both CLIs).
-   - Let the agent use `system.run` to call:
-     - `python "{baseDir}/bnbchain_metrics_cli.py" ...` for raw BSC metrics.
-     - `python "{baseDir}/clipx_text_cli.py" ...` for ClipX-style rankings.
-6. For other frameworks:
-   - Optionally use `bnbchain_metrics_tool.json` + `example_agent_integration.py`
-     for core metrics.
-   - Directly shell out to `clipx_text_cli.py` for ClipX analyses and parse
-     the returned JSON.
-
-
-
+This skill is provided as-is. The ClipX API and backend logic are maintained separately.

@@ -25,7 +25,8 @@ ANALYSIS_TYPES = (
     "fulleco",
     "social_hype",
     "meme_rank",
-    "Binance_market_insight",
+    "market_insight",
+    "market_insight_live",
 )
 
 
@@ -113,6 +114,44 @@ def main():
         print(data.get("caption", ""))
         return
 
+    # market_insight_live: 3 sections (Volume Leaders, Gainers, Losers)
+    if analysis_type == "market_insight_live" and items:
+        vol_items = [it for it in items if it.get("section") == "volume"]
+        gain_items = [it for it in items if it.get("section") == "gainer"]
+        lose_items = [it for it in items if it.get("section") == "loser"]
+        sep = "=" * 62
+        sep_s = "-" * 62
+        print()
+        print(sep)
+        print("🟢 LIVE BINANCE DATA")
+        print(sep)
+        if vol_items:
+            print("\n💰 24H VOLUME LEADERS:")
+            print(sep_s)
+            print(f"{'#':<3} | {'NAME':<12} | {'24H VOLUME':<14}")
+            print(sep_s)
+            for it in vol_items:
+                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:10]:<12} | {it.get('metric_value',''):<14}")
+        if gain_items:
+            print("\n📈 TOP GAINERS (24H):")
+            print(sep_s)
+            print(f"{'#':<3} | {'NAME':<12} | {'24H CHANGE':<12}")
+            print(sep_s)
+            for it in gain_items:
+                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:10]:<12} | {it.get('metric_value',''):<12}")
+        if lose_items:
+            print("\n📉 TOP LOSERS (24H):")
+            print(sep_s)
+            print(f"{'#':<3} | {'NAME':<12} | {'24H CHANGE':<12}")
+            print(sep_s)
+            for it in lose_items:
+                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:10]:<12} | {it.get('metric_value',''):<12}")
+        print("\n" + sep)
+        if data.get("source"):
+            print(f"Source: {data['source']}")
+        print()
+        return
+
     # meme_rank: match VPS "FETCHED MEME TOKENS (FOR VERIFICATION)" (RANK|NAME|SCORE|MCAP|B.HOLDERS)
     if analysis_type == "meme_rank" and items and (items[0].get("mcap") is not None or items[0].get("bHolders") is not None):
         sep = "=" * 62
@@ -145,7 +184,8 @@ def main():
         "fulleco": ("FULL ECOSYSTEM LEADERS", "#", "NAME", "CATEGORY", "METRIC"),
         "social_hype": ("TOP 10 SOCIAL HYPE TOKENS", "#", "NAME", "SENTIMENT", "HYPE SCORE"),
         "meme_rank": ("TOP 10 MEME TOKENS BY SCORE", "#", "NAME", "—", "SCORE"),
-        "Binancemarket_insight": ("Live Binance Market Data", "#", "NAME", "CATEGORY", "24H VOLUME"),
+        "market_insight": ("BINANCE 24H VOLUME LEADERS", "#", "NAME", "CATEGORY", "24H VOLUME"),
+        "market_insight_live": ("LIVE BINANCE DATA", "#", "NAME", "CATEGORY", "VALUE"),
     }
     title_line, col1, col2, col3, col4 = titles.get(
         analysis_type, ("RANKING", "#", "NAME", "CATEGORY", "VALUE")

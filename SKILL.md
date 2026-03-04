@@ -35,8 +35,9 @@ When the user says "clipx", "bnbchain", "bnbchain analysis", or asks for BNB Cha
 7. Meme Rank — Top 10 meme tokens by score
 8. Network metrics — Latest block, gas price, sync state
 9. Market Insight — Binance 24h volume leaders (top USDT pairs)
+10. Market Insight (Live) — Volume Leaders + Top Gainers + Top Losers
 
-Reply with a number (1–9).
+Reply with a number (1–10).
 
 ---
 
@@ -53,6 +54,7 @@ Reply with a number (1–9).
 | 7 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type meme_rank --interval 24 --timezone UTC` |
 | 8 | `python "{baseDir}/api_client_cli.py" --mode metrics_basic` |
 | 9 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight --timezone UTC` |
+| 10 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight_live --timezone UTC` |
 
 For 2 (fees) and 3 (revenue), default to 24h. If the user specifies 7d or 30d, use `--interval 7d` or `--interval 30d`.
 
@@ -88,6 +90,12 @@ Source: @ClipX0_
 ## Network metrics (option 8)
 
 Returns JSON with `latest_block`, `gas_price_gwei`, `syncing`. Summarize in plain language.
+
+---
+
+## Market Insight (Live) — option 10
+
+Uses API `market_insight_live` — Volume Leaders + Top Gainers + Top Losers in one snapshot. Same server-side logic as Market Insight (option 9); no code exposure on the client.
 
 ---
 

@@ -61,7 +61,7 @@ def parse_args(argv: Any = None) -> argparse.Namespace:
     p.add_argument(
         "--analysis-type",
         type=str,
-        help="ClipX analysis_type (tvl_rank, fees_rank, revenue_rank, dapps_rank, fulleco, social_hype, meme_rank, market_insight).",
+        help="ClipX analysis_type (tvl_rank, fees_rank, revenue_rank, dapps_rank, fulleco, social_hype, meme_rank, market_insight, market_insight_live).",
     )
     p.add_argument(
         "--interval",
