@@ -35,9 +35,10 @@ When the user says "clipx", "bnbchain", "bnbchain analysis", or asks for BNB Cha
 7. Meme Rank — Top 10 meme tokens by score
 8. Network metrics — Latest block, gas price, sync state
 9. Market Insight — Binance 24h volume leaders (top USDT pairs)
-10. Market Insight (Live) — Volume Leaders + Top Gainers + Top Losers
+10. Market Insight (Live) — Volume Leaders + Top Gainers + Top Losers (snapshot)
+11. Binance Announcements — Top 10 newest from Binance
 
-Reply with a number (1–10).
+Reply with a number (1–11).
 
 ---
 
@@ -54,7 +55,8 @@ Reply with a number (1–10).
 | 7 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type meme_rank --interval 24 --timezone UTC` |
 | 8 | `python "{baseDir}/api_client_cli.py" --mode metrics_basic` |
 | 9 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight --timezone UTC` |
-| 10 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight_live --timezone UTC --live` |
+| 10 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight_live --timezone UTC` |
+| 11 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type binance_announcements --timezone UTC` |
 
 For 2 (fees) and 3 (revenue), default to 24h. If the user specifies 7d or 30d, use `--interval 7d` or `--interval 30d`.
 
@@ -95,7 +97,11 @@ Returns JSON with `latest_block`, `gas_price_gwei`, `syncing`. Summarize in plai
 
 ## Market Insight (Live) — option 10
 
-Uses API `market_insight_live` with `--live` — Volume Leaders + Top Gainers + Top Losers, refreshes every 1s (full real time). Ctrl+C to stop. No code exposure on the client.
+Uses API `market_insight_live` — Volume Leaders + Top Gainers + Top Losers in one snapshot. (No `--live` in chat; OpenClaw shows static messages. Use `--live` locally for real-time refresh.)
+
+## Binance Announcements — option 11
+
+Uses API `binance_announcements` — Top 10 newest announcements (sorted newest first, no date parsing).
 
 ---
 

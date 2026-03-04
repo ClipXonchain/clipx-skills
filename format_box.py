@@ -27,6 +27,7 @@ ANALYSIS_TYPES = (
     "meme_rank",
     "market_insight",
     "market_insight_live",
+    "binance_announcements",
 )
 
 
@@ -45,6 +46,7 @@ def get_json_from_api(analysis_type: str, interval: str, timezone: str) -> str:
         "--analysis-type", analysis_type,
         "--interval", interval,
         "--timezone", timezone,
+        "--no-formatted",
     ]
     result = subprocess.run(
         cmd,
@@ -112,6 +114,25 @@ def main():
     items = data.get("items", [])
     if not items:
         print(data.get("caption", ""))
+        return
+
+    # binance_announcements: headlines as bullet list
+    if analysis_type == "binance_announcements" and items:
+        sep = "=" * 72
+        print()
+        print(sep)
+        print("📢 BINANCE ANNOUNCEMENTS (TOP 10)")
+        print(sep)
+        print()
+        for it in items:
+            name = (it.get("name") or "").strip()
+            if name:
+                print(f"• {name}")
+        print()
+        print(sep)
+        if data.get("source"):
+            print(f"Source: {data['source']}")
+        print()
         return
 
     # market_insight_live: 3 sections (Volume Leaders, Gainers, Losers)
