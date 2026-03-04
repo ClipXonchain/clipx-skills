@@ -8,9 +8,9 @@ metadata: { "openclaw": { "emoji": "🟡", "requires": { "bins": ["python"] }, "
 
 **Rule 1 — Menu format:** Always use numbered lines (1. 2. 3. …). See "Interactive menu" section.
 
-**Rule 2 — Table format:** Always wrap the table output in `<pre>` and `</pre>` tags. This is required so the table displays in monospace with aligned columns. Without `<pre>` tags the columns will be misaligned and unreadable.
+**Rule 2 — Table format:** Always wrap the table output inside a markdown code block (triple backticks). Start with a line containing only three backticks, then the table lines, then a line containing only three backticks. This is required so the table displays in monospace with aligned columns.
 
-**Rule 3 — Response ends with the table.** After the closing `</pre>`, your message is complete. Write nothing else.
+**Rule 3 — Response ends with the table.** After the closing triple backticks, your message is complete. Write nothing else.
 
 ---
 
@@ -62,12 +62,12 @@ The client prints a pre-formatted table. Your job:
 
 1. Run the command.
 2. Take the stdout output (the formatted table).
-3. Wrap the entire output between `<pre>` and `</pre>` tags.
+3. Put it inside a markdown code block (three backticks on a line before, three backticks on a line after).
 4. Send it. Done. Your response is complete.
 
 Your response must look exactly like this:
 
-<pre>
+```
 ================================================================================
 🚀 TOP 10 MEME TOKENS BY SCORE
 ================================================================================
@@ -79,7 +79,7 @@ Your response must look exactly like this:
 ...
 ================================================================================
 Source: @ClipX0_
-</pre>
+```
 
 ---
 
