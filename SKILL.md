@@ -54,7 +54,7 @@ Reply with a number (1–10).
 | 7 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type meme_rank --interval 24 --timezone UTC` |
 | 8 | `python "{baseDir}/api_client_cli.py" --mode metrics_basic` |
 | 9 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight --timezone UTC` |
-| 10 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight_live --timezone UTC` |
+| 10 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight_live --timezone UTC --live` |
 
 For 2 (fees) and 3 (revenue), default to 24h. If the user specifies 7d or 30d, use `--interval 7d` or `--interval 30d`.
 
@@ -95,7 +95,7 @@ Returns JSON with `latest_block`, `gas_price_gwei`, `syncing`. Summarize in plai
 
 ## Market Insight (Live) — option 10
 
-Uses API `market_insight_live` — Volume Leaders + Top Gainers + Top Losers in one snapshot. Same server-side logic as Market Insight (option 9); no code exposure on the client.
+Uses API `market_insight_live` with `--live` — Volume Leaders + Top Gainers + Top Losers, refreshes every 1s (full real time). Ctrl+C to stop. No code exposure on the client.
 
 ---
 

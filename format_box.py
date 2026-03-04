@@ -119,8 +119,8 @@ def main():
         vol_items = [it for it in items if it.get("section") == "volume"]
         gain_items = [it for it in items if it.get("section") == "gainer"]
         lose_items = [it for it in items if it.get("section") == "loser"]
-        sep = "=" * 62
-        sep_s = "-" * 62
+        sep = "=" * 72
+        sep_s = "-" * 72
         print()
         print(sep)
         print("🟢 LIVE BINANCE DATA")
@@ -128,24 +128,24 @@ def main():
         if vol_items:
             print("\n💰 24H VOLUME LEADERS:")
             print(sep_s)
-            print(f"{'#':<3} | {'NAME':<12} | {'24H VOLUME':<14}")
+            print(f"{'#':<3} | {'NAME':<10} | {'PRICE':<14} | {'24H VOLUME':<14}")
             print(sep_s)
             for it in vol_items:
-                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:10]:<12} | {it.get('metric_value',''):<14}")
+                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:8]:<10} | {it.get('price',''):<14} | {it.get('metric_value',''):<14}")
         if gain_items:
             print("\n📈 TOP GAINERS (24H):")
             print(sep_s)
-            print(f"{'#':<3} | {'NAME':<12} | {'24H CHANGE':<12}")
+            print(f"{'#':<3} | {'NAME':<10} | {'PRICE':<14} | {'24H CHANGE':<12}")
             print(sep_s)
             for it in gain_items:
-                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:10]:<12} | {it.get('metric_value',''):<12}")
+                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:8]:<10} | {it.get('price',''):<14} | {it.get('metric_value',''):<12}")
         if lose_items:
             print("\n📉 TOP LOSERS (24H):")
             print(sep_s)
-            print(f"{'#':<3} | {'NAME':<12} | {'24H CHANGE':<12}")
+            print(f"{'#':<3} | {'NAME':<10} | {'PRICE':<14} | {'24H CHANGE':<12}")
             print(sep_s)
             for it in lose_items:
-                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:10]:<12} | {it.get('metric_value',''):<12}")
+                print(f"{it.get('rank',''):<3} | {(it.get('name') or '')[:8]:<10} | {it.get('price',''):<14} | {it.get('metric_value',''):<12}")
         print("\n" + sep)
         if data.get("source"):
             print(f"Source: {data['source']}")

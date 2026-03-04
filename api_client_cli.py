@@ -13,9 +13,14 @@ import argparse
 import json
 import os
 import sys
+import time
 from typing import Any, Dict
 
 import requests
+
+
+def _clear_screen() -> None:
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 def get_api_base() -> str:
@@ -87,6 +92,17 @@ def parse_args(argv: Any = None) -> argparse.Namespace:
         action="store_false",
         help="For clipx mode: print raw JSON instead of formatted table.",
     )
+    p.add_argument(
+        "--live",
+        action="store_true",
+        help="For clipx mode: keep refreshing in real time (Ctrl+C to stop).",
+    )
+    p.add_argument(
+        "--refresh-interval",
+        type=int,
+        default=1,
+        help="Seconds between refreshes when --live (default: 1 for full real time).",
+    )
     return p.parse_args(argv)
 
 
@@ -109,10 +125,22 @@ def main(argv: Any = None) -> int:
         if not args.analysis_type:
             print(json.dumps({"ok": False, "error": "analysis-type required"}))
             return 1
-        result = call_api(
-            "/api/clipx/analysis",
-            {"t": args.analysis_type, "interval": args.interval, "tz": args.timezone},
-        )
+        params = {"t": args.analysis_type, "interval": args.interval, "tz": args.timezone}
+        if args.live:
+            try:
+                while True:
+                    result = call_api("/api/clipx/analysis", params)
+                    _clear_screen()
+                    if result.get("ok") and result.get("formatted_table") and args.formatted:
+                        print(result["formatted_table"], end="")
+                    else:
+                        print(json.dumps(result, separators=(",", ":")))
+                    print(f"\nRefreshing in {args.refresh_interval}s... (Ctrl+C to stop)")
+                    time.sleep(args.refresh_interval)
+            except KeyboardInterrupt:
+                print("\nStopped.")
+                return 0
+        result = call_api("/api/clipx/analysis", params)
         if result.get("ok") and result.get("formatted_table") and args.formatted:
             print(result["formatted_table"], end="")
             return 0
