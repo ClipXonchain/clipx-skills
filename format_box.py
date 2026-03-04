@@ -25,6 +25,7 @@ ANALYSIS_TYPES = (
     "fulleco",
     "social_hype",
     "meme_rank",
+    "Binance_market_insight",
 )
 
 
@@ -144,6 +145,7 @@ def main():
         "fulleco": ("FULL ECOSYSTEM LEADERS", "#", "NAME", "CATEGORY", "METRIC"),
         "social_hype": ("TOP 10 SOCIAL HYPE TOKENS", "#", "NAME", "SENTIMENT", "HYPE SCORE"),
         "meme_rank": ("TOP 10 MEME TOKENS BY SCORE", "#", "NAME", "—", "SCORE"),
+        "Binancemarket_insight": ("Live Binance Market Data", "#", "NAME", "CATEGORY", "24H VOLUME"),
     }
     title_line, col1, col2, col3, col4 = titles.get(
         analysis_type, ("RANKING", "#", "NAME", "CATEGORY", "VALUE")

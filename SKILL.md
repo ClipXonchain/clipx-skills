@@ -34,8 +34,9 @@ When the user says "clipx", "bnbchain", "bnbchain analysis", or asks for BNB Cha
 6. Social Hype — Top 10 social hype tokens
 7. Meme Rank — Top 10 meme tokens by score
 8. Network metrics — Latest block, gas price, sync state
+9. Market Insight — Binance 24h volume leaders (top USDT pairs)
 
-Reply with a number (1–8).
+Reply with a number (1–9).
 
 ---
 
@@ -51,6 +52,7 @@ Reply with a number (1–8).
 | 6 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type social_hype --interval 24 --timezone UTC` |
 | 7 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type meme_rank --interval 24 --timezone UTC` |
 | 8 | `python "{baseDir}/api_client_cli.py" --mode metrics_basic` |
+| 9 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight --timezone UTC` |
 
 For 2 (fees) and 3 (revenue), default to 24h. If the user specifies 7d or 30d, use `--interval 7d` or `--interval 30d`.
 
