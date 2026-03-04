@@ -8,9 +8,9 @@ metadata: { "openclaw": { "emoji": "🟡", "requires": { "bins": ["python"] }, "
 
 **Rule 1 — Menu format:** Always use numbered lines (1. 2. 3. …). See "Interactive menu" section.
 
-**Rule 2 — Table format:** Always wrap the table in `<pre>...</pre>` (for Telegram with parse_mode=HTML) or triple backticks. The client output is already formatted — display it as-is inside the wrapper.
+**Rule 2 — Table format:** Always wrap the table output in `<pre>` and `</pre>` tags. This is required so the table displays in monospace with aligned columns. Without `<pre>` tags the columns will be misaligned and unreadable.
 
-**Rule 3 — Response ends with the table.** After the closing `</pre>` or closing triple backticks, your message is complete. Write nothing else.
+**Rule 3 — Response ends with the table.** After the closing `</pre>`, your message is complete. Write nothing else.
 
 ---
 
@@ -26,14 +26,14 @@ When the user says "clipx", "bnbchain", "bnbchain analysis", or asks for BNB Cha
 
 🟡 ClipX / BNBChain Analysis — Choose one:
 
-1- TVL Rank — Top 10 protocols by Total Value Locked
-2- Fees Rank — Top 10 protocols by fees paid (24h/7d/30d)
-3- Revenue Rank — Top 10 protocols by revenue (24h/7d/30d)
-4- DApps Rank — Top 10 DApps by users (7d)
-5- Full Ecosystem — DeFi, Games, Social, NFTs, AI, Infra, RWA leaders
-6- Social Hype — Top 10 social hype tokens
-7- Meme Rank — Top 10 meme tokens by score
-8- Network metrics — Latest block, gas price, sync state
+1. TVL Rank — Top 10 protocols by Total Value Locked
+2. Fees Rank — Top 10 protocols by fees paid (24h/7d/30d)
+3. Revenue Rank — Top 10 protocols by revenue (24h/7d/30d)
+4. DApps Rank — Top 10 DApps by users (7d)
+5. Full Ecosystem — DeFi, Games, Social, NFTs, AI, Infra, RWA leaders
+6. Social Hype — Top 10 social hype tokens
+7. Meme Rank — Top 10 meme tokens by score
+8. Network metrics — Latest block, gas price, sync state
 
 Reply with a number (1–8).
 
@@ -62,10 +62,10 @@ The client prints a pre-formatted table. Your job:
 
 1. Run the command.
 2. Take the stdout output (the formatted table).
-3. Wrap it in `<pre>` and `</pre>` (for Telegram) or triple backticks (for other platforms).
+3. Wrap the entire output between `<pre>` and `</pre>` tags.
 4. Send it. Done. Your response is complete.
 
-Example for Telegram:
+Your response must look exactly like this:
 
 <pre>
 ================================================================================
@@ -80,16 +80,6 @@ Example for Telegram:
 ================================================================================
 Source: @ClipX0_
 </pre>
-
-Example for non-Telegram (markdown):
-
-```text
-================================================================================
-🚀 TOP 10 MEME TOKENS BY SCORE
-================================================================================
-...
-Source: @ClipX0_
-```
 
 ---
 
