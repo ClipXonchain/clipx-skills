@@ -8,7 +8,7 @@ metadata: { "openclaw": { "emoji": "🟡", "requires": { "bins": ["python"] }, "
 
 **Rule 1 — Menu format:** Always use numbered lines (1. 2. 3. …). See "Interactive menu" section.
 
-**Rule 2 — Table format:** Always wrap the table output inside a markdown code block (triple backticks). Start with a line containing only three backticks, then the table lines, then a line containing only three backticks. This is required so the table displays in monospace with aligned columns.
+**Rule 2 — Table format:** Always wrap the table output inside a markdown code block (triple backticks). Start with a line containing only three backticks, then the table lines, then a line containing only three backticks. This is required so the table displays in monospace with aligned columns. **Exception:** For option 11 (Binance Announcements), do NOT wrap in code block — output as plain markdown (bold header, bullet list, normal text).
 
 **Rule 3 — Response ends with the table.** After the closing triple backticks, your message is complete. Write nothing else.
 
@@ -37,8 +37,9 @@ When the user says "clipx", "bnbchain", "bnbchain analysis", or asks for BNB Cha
 9. Market Insight — Binance 24h volume leaders (top USDT pairs)
 10. Market Insight (Live) — Volume Leaders + Top Gainers + Top Losers (snapshot)
 11. Binance Announcements — Top 10 newest from Binance
+12. DEX Volume — Top 10 DEXs by trading volume on BNB Chain (24h/7d/30d)
 
-Reply with a number (1–11).
+Reply with a number (1–12).
 
 ---
 
@@ -57,8 +58,9 @@ Reply with a number (1–11).
 | 9 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight --timezone UTC` |
 | 10 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type market_insight_live --timezone UTC` |
 | 11 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type binance_announcements --timezone UTC` |
+| 12 | `python "{baseDir}/api_client_cli.py" --mode clipx --analysis-type dex_volume --interval 24h --timezone UTC` |
 
-For 2 (fees) and 3 (revenue), default to 24h. If the user specifies 7d or 30d, use `--interval 7d` or `--interval 30d`.
+For 2 (fees), 3 (revenue), and 12 (DEX volume), default to 24h. If the user specifies 7d or 30d, use `--interval 7d` or `--interval 30d`.
 
 ---
 
@@ -101,7 +103,11 @@ Uses API `market_insight_live` — Volume Leaders + Top Gainers + Top Losers in 
 
 ## Binance Announcements — option 11
 
-Uses API `binance_announcements` — Top 10 newest announcements (sorted newest first, no date parsing).
+Uses API `binance_announcements` — Top 10 newest announcements. Output as plain markdown (bold header, bullets) — do NOT wrap in code block.
+
+## DEX Volume — option 12
+
+Uses API `dex_volume` — Top 10 DEXs on BNB Chain by trading volume. Supports intervals: 24h (default), 7d, 30d. Data from DefiLlama.
 
 ---
 
@@ -114,4 +120,4 @@ Uses API `binance_announcements` — Top 10 newest announcements (sorted newest 
 
 ## Environment
 
-The API base URL defaults to `http://5.189.145.246:8000`. Override with `CLIPX_API_BASE` env var.
+The API base URL defaults to `https://skill.clipx.app`. Override with `CLIPX_API_BASE` env var.

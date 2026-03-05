@@ -29,7 +29,7 @@ def get_api_base() -> str:
     if env_base:
         return env_base.rstrip("/")
     # Fallback: hard-code your public API URL here
-    return "http://5.189.145.246:8000"
+    return "https://skill.clipx.app"
 
 
 def call_api(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -66,7 +66,7 @@ def parse_args(argv: Any = None) -> argparse.Namespace:
     p.add_argument(
         "--analysis-type",
         type=str,
-        help="ClipX analysis_type (tvl_rank, fees_rank, revenue_rank, dapps_rank, fulleco, social_hype, meme_rank, market_insight, market_insight_live, binance_announcements).",
+        help="ClipX analysis_type (tvl_rank, fees_rank, revenue_rank, dapps_rank, fulleco, social_hype, meme_rank, market_insight, market_insight_live, binance_announcements, dex_volume).",
     )
     p.add_argument(
         "--interval",

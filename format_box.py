@@ -28,6 +28,7 @@ ANALYSIS_TYPES = (
     "market_insight",
     "market_insight_live",
     "binance_announcements",
+    "dex_volume",
 )
 
 
@@ -116,22 +117,18 @@ def main():
         print(data.get("caption", ""))
         return
 
-    # binance_announcements: headlines as bullet list
+    # binance_announcements: plain markdown (bold header, numbered, blank line after each)
     if analysis_type == "binance_announcements" and items:
-        sep = "=" * 72
         print()
-        print(sep)
-        print("📢 BINANCE ANNOUNCEMENTS (TOP 10)")
-        print(sep)
+        print("**📢 Binance Announcements (Top 10)**")
         print()
-        for it in items:
+        for i, it in enumerate(items, 1):
             name = (it.get("name") or "").strip()
             if name:
-                print(f"• {name}")
-        print()
-        print(sep)
+                print(f"{i}. {name}")
+                print()
         if data.get("source"):
-            print(f"Source: {data['source']}")
+            print("[Source](https://www.binance.com/en/messages/v2/group/announcement)")
         print()
         return
 
@@ -207,13 +204,14 @@ def main():
         "meme_rank": ("TOP 10 MEME TOKENS BY SCORE", "#", "NAME", "—", "SCORE"),
         "market_insight": ("BINANCE 24H VOLUME LEADERS", "#", "NAME", "CATEGORY", "24H VOLUME"),
         "market_insight_live": ("LIVE BINANCE DATA", "#", "NAME", "CATEGORY", "VALUE"),
+        "dex_volume": ("TOP 10 DEX VOLUME ON BNB CHAIN", "#", "NAME", "CATEGORY", "VOLUME"),
     }
     title_line, col1, col2, col3, col4 = titles.get(
         analysis_type, ("RANKING", "#", "NAME", "CATEGORY", "VALUE")
     )
     meta = data.get("meta") or {}
     interval = (meta.get("interval") or data.get("interval") or "").strip().upper()
-    if interval and analysis_type in ("fees_rank", "revenue_rank"):
+    if interval and analysis_type in ("fees_rank", "revenue_rank", "dex_volume"):
         title_line = f"{title_line} ({interval})"
 
     w2, w3 = 22, 16

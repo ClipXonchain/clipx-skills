@@ -89,6 +89,8 @@ flowchart TD
 | 8 | Network metrics | Latest block, gas price, sync state |
 | 9 | Market Insight | Binance 24h volume leaders (API snapshot) |
 | 10 | Market Insight (Live) | Volume Leaders + Top Gainers + Top Losers (API snapshot) |
+| 11 | Binance Announcements | Top 10 newest from Binance |
+| 12 | DEX Volume | Top 10 DEXs by trading volume on BNB Chain (24h/7d/30d) |
 
 ---
 
@@ -112,7 +114,7 @@ export CLIPX_API_BASE="https://your-clipx-api.com"
 $env:CLIPX_API_BASE = "https://your-clipx-api.com"
 ```
 
-Default: `http://5.189.145.246:8000`
+Default: `https://skill.clipx.app`
 
 ### 3. Publish to ClawHub
 
@@ -168,13 +170,14 @@ clawhub publish . \
 | `fulleco` | — | Full ecosystem leaders |
 | `social_hype` | 24 | Social hype tokens |
 | `meme_rank` | 24 | Meme token scores |
+| `dex_volume` | 24h, 7d, 30d | Top DEXs by volume on BNB Chain |
 
 ### Parameters
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `--analysis-type` | (required for clipx) | One of the types above |
-| `--interval` | 24h | Used by fees_rank, revenue_rank, social_hype, meme_rank |
+| `--interval` | 24h | Used by fees_rank, revenue_rank, social_hype, meme_rank, dex_volume |
 | `--timezone` | UTC | Timestamp timezone |
 | `--formatted` | default | Print server-formatted table |
 | `--no-formatted` | — | Print raw JSON |
@@ -201,7 +204,7 @@ python api_client_cli.py --mode clipx --analysis-type meme_rank --interval 24 --
 
 | Variable | Description |
 |----------|-------------|
-| `CLIPX_API_BASE` | Base URL for ClipX API (e.g. `https://api.clipx.app`). Overrides hard-coded default. |
+| `CLIPX_API_BASE` | Base URL for ClipX API (default: `https://skill.clipx.app`). Overrides hard-coded default. |
 
 ### Platform-Specific Setup
 
